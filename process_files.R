@@ -39,12 +39,14 @@ rm(list = ls())
 
 library(ncdf4) #deal with netcdf format files
 library(oce) #calculate density sigma
+library(MASS)
 
 ####################
 ############### FUNCTIONS
 ###################
 
-dir_function <- "/PATH_FUNCTIONS/"
+#dir_function <- "/PATH_FUNCTIONS/"
+dir_function = "~/Documents/cornec_chla_qc/chl_bbp_ttt/Functions/"
 
 source(paste(dir_function,"NPQ_cor_X12_XB18.R",sep="")) # Needed to correct the profile from the NPQ (in presence of PAR measured in situ)
 source(paste(dir_function,"NPQ_cor_P18.R",sep="")) # Needed to correct the profile from the NPQ (in absence of PAR measured in situ)
@@ -62,7 +64,7 @@ source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the d
 ###################
 
 # Read the merge file index
-index_ifremer<-read.table("/PATH_TO_INDEX_FILE/argo_merge-profile_index.txt", skip=9, sep = ",")
+index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
 files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
 ident<-strsplit(files,"/") #separate the different roots of the files paths
 ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
@@ -84,11 +86,14 @@ lon<-index_ifremer[,4] #retrieve the longitude of all profiles as a vector
 # Must be a vector of profiles ID at the format "WMO_profilenumber.", example : "6901495_025." (12 elements)
 # The "." is used to tell that the profile is an Ascent one (should be replaced by "D" if it is a Descent one) 
 
-profile_list<-c("6901524_150.", # case of deep vertical mixing in the north atlantic subpolar gyre 
-                "6901472_024.", # case of subtropical gyre with increase of Fchla at depth
-                "6901527_040.", # case of NPQ correction with the PAR profile
-                "5904686_040."# case of NPQ correction without the PAR profile
-                )
+#profile_list<-c("6901524_150.", # case of deep vertical mixing in the north atlantic subpolar gyre 
+#                "6901472_024.", # case of subtropical gyre with increase of Fchla at depth
+#                "6901527_040.", # case of NPQ correction with the PAR profile
+#                "5904686_040."# case of NPQ correction without the PAR profile
+#                )
+profile_list<-c("6901032_009.")
+#path_to_netcdf = "~/Documents/data/chla_night_profiles/"
+path_to_netcdf = "~/Documents/test/ftp.ifremer.fr/ifremer/argo/dac/"
 
 
 ########################################################################################################
@@ -130,7 +135,7 @@ for (profile_actual in profile_list) {
     print("dark TS calc")
     DEEP_EST<-NULL
     DEEP_EST<-Dark_MLD_table_coriolis(substr(profile_actual,1,7), # calculation of the dark time serie (Dark_MLD_table_coriolis function)
-                                      "/PATH_TO_NETCDF_FILES/",index_ifremer)
+                                      path_to_netcdf,index_ifremer)
   }
   dark_old<-dark_new #attribute the actual wmo to the dark marker for the next profile
   
@@ -139,7 +144,7 @@ for (profile_actual in profile_list) {
   #################
   
   profile<-NULL
-  profile <- nc_open(paste( "/PATH_TO_NETCDF_FILES/",files[i],sep=""),readunlim=FALSE,write=FALSE)
+  profile <- nc_open(paste(path_to_netcdf,files[i],sep=""),readunlim=FALSE,write=FALSE)
   
   #################
   ############# D) POSITION INFORMATIONS : LON / LAT / DATE
