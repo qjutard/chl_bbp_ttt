@@ -91,7 +91,7 @@ lon<-index_ifremer[,4] #retrieve the longitude of all profiles as a vector
 #                "6901527_040.", # case of NPQ correction with the PAR profile
 #                "5904686_040."# case of NPQ correction without the PAR profile
 #                )
-profile_list<-c("5904686_040.")
+profile_list<-c("6901524_150.")
 #path_to_netcdf = "~/Documents/data/chla_night_profiles/"
 path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
 

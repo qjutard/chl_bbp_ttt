@@ -54,52 +54,77 @@ Dark_MLD_table_coriolis<-function (WMO,chemin,index_ifremer) {
     } 
     
     #open the file
-    profile<-NULL
-    profile <- nc_open(paste(chemin,i,sep=""),readunlim=FALSE,write=FALSE)
+    #profile<-NULL
+    #profile <- nc_open(paste(chemin,i,sep=""),readunlim=FALSE,write=FALSE)
+    path_split = unlist( strsplit(i,"/") )
+    path_to_profile = paste(path_split[1], path_split[2], path_split[3], sep="/")
+    
+    filenc_name_M = path_split[4]
+    filenc_name_C = substring(filenc_name_M, 2)
+    filenc_name_B = paste("B", filenc_name_C, sep="")
+    
+    file_M = i
+    file_C = paste(path_to_profile, filenc_name_C, sep="/")
+    file_B = paste(path_to_profile, filenc_name_B, sep="/")
+    
+    #profile<-NULL
+    profile_C<-NULL
+    profile_B<-NULL
+    #profile <- nc_open(paste(chemin, file_M, sep=""), readunlim=FALSE, write=FALSE)
+    profile_C <- nc_open(paste(chemin , file_C, sep=""), readunlim=FALSE, write=FALSE)
+    profile_B <- nc_open(paste(chemin, file_B, sep=""), readunlim=FALSE, write=FALSE)
     
     #################
     ############# POSITION : LON / LAT / DATE
     #################
     
     position_qc<-NA
-    position_qc<-substr(ncvar_get(profile,"POSITION_QC"),1,1) # read position QC
+    position_qc<-substr(ncvar_get(profile_B,"POSITION_QC"),1,1) # read position QC
     
     # skip the profile if the position QC is bad
     if (position_qc == 3 | position_qc==4) {
-      nc_close(profile)
-      next
+        #nc_close(profile)
+        nc_close(profile_C)
+        nc_close(profile_B)
+        next
     }
     
     lat<-NA
-    lat<- ncvar_get(profile,"LATITUDE")[1]
+    lat<- ncvar_get(profile_B,"LATITUDE")[1]
     lon<-NA
-    lon<- ncvar_get(profile,"LONGITUDE")[1]
+    lon<- ncvar_get(profile_B,"LONGITUDE")[1]
     
     # skip the profile if one (or both) coordinate(s) is(are) missing
     if (is.na(lat) | is.na(lon)) {
-      nc_close(profile)
-      next
+        #nc_close(profile)
+        nc_close(profile_C)
+        nc_close(profile_B)
+        next
     }
     
     jd<-NA
-    jd <- ncvar_get(profile,"JULD")[1] #read julian day 
+    jd <- ncvar_get(profile_B,"JULD")[1] #read julian day 
     origin<-NA # set the origin date
     origin<-as.POSIXct("1950-01-01 00:00:00", order="ymdhms") #convert juld->time
     time<-NA
     time<-origin + jd*3600*24 #calculate the time (format POSIXct yyyy-mm-dd hh:mm:ss)
     jd_qc<-NA
-    jd_qc<-substr(ncvar_get(profile,"JULD_QC"),1,1) # read julian day qc
+    jd_qc<-substr(ncvar_get(profile_B,"JULD_QC"),1,1) # read julian day qc
     
     # skip the profile if the date is missing
     if (is.na(time)) {
-      nc_close(profile)
-      next
+        #nc_close(profile)
+        nc_close(profile_C)
+        nc_close(profile_B)
+        next
     }
     
     # skip the profile if julian date qc is bad
     if (jd_qc == 3 | jd_qc==4) {
-      nc_close(profile)
-      next
+        #nc_close(profile)
+        nc_close(profile_C)
+        nc_close(profile_B)
+        next
     }
     
     #########################
@@ -125,21 +150,21 @@ Dark_MLD_table_coriolis<-function (WMO,chemin,index_ifremer) {
     ##################
     
     pres<-NA 
-    pres <- as.vector(ncvar_get(profile,"PRES")) #read the pressure variable as one unique vector
+    pres <- as.vector(ncvar_get(profile_B,"PRES")) #read the pressure variable as one unique vector
     pres_qc<-NULL #set the qc pressure 
     
-    parameters<-ncvar_get(profile,"STATION_PARAMETERS") #read the parameters variable (indicating the variables corresponding to each column of the profile file)
+    parameters<-ncvar_get(profile_B,"STATION_PARAMETERS") #read the parameters variable (indicating the variables corresponding to each column of the profile file)
     
     # Change the QC pressure to 1 for the bio-optic parameters (remove some Argo processing issue putting wrong QC pressure)
-    for (ik in 1:dim(ncvar_get(profile,"PRES_QC"))) {
+    for (ik in 1:dim(ncvar_get(profile_C,"PRES_QC"))) {
       if (length(grep("CHLA",parameters[,ik]))==1 | #identify the columns where bio-optic parameters are measured
           length(grep("BBP700",parameters[,ik]))==1) {
         optic_depth_qc<-NA
-        optic_depth_qc<-paste(rep(1,nchar(ncvar_get(profile,"PRES_QC")[1])),collapse="") #create vector with QC 1 
+        optic_depth_qc<-paste(rep(1,nchar(ncvar_get(profile_C,"PRES_QC")[1])),collapse="") #create vector with QC 1 
         pres_qc<-paste(pres_qc,optic_depth_qc,sep="") # bind the qc vectors per column into one
         next
       }
-      pres_qc<-paste(pres_qc,ncvar_get(profile,"PRES_QC")[ik],sep="") # bind the qc vectors per column into one
+      pres_qc<-paste(pres_qc,ncvar_get(profile_C,"PRES_QC")[ik],sep="") # bind the qc vectors per column into one
     }
     
     # put NA to pressure with a bad QC
@@ -156,12 +181,12 @@ Dark_MLD_table_coriolis<-function (WMO,chemin,index_ifremer) {
     
     
     temp_get<-NA
-    temp_get <- as.vector(ncvar_get(profile,"TEMP")) #read the temperature variable as one unique vector
+    temp_get <- as.vector(ncvar_get(profile_C,"TEMP")) #read the temperature variable as one unique vector
     
     # read the qc temp
     temp_qc<-NULL 
-    for (ik in 1:dim(ncvar_get(profile,"TEMP_QC"))) {
-      temp_qc<-paste(temp_qc,ncvar_get(profile,"TEMP_QC")[ik],sep="")
+    for (ik in 1:dim(ncvar_get(profile_C,"TEMP_QC"))) {
+      temp_qc<-paste(temp_qc,ncvar_get(profile_C,"TEMP_QC")[ik],sep="")
     }
     
     # attribute NA to temp values with bad qc
@@ -181,12 +206,12 @@ Dark_MLD_table_coriolis<-function (WMO,chemin,index_ifremer) {
     pres_temp<-pres_temp[order(pres_temp)] # order the pressure vector corresponding to the temperature
     
     sal_get<-NA
-    sal_get <- as.vector(ncvar_get(profile,"PSAL")) #read the salinity variable as one unique vector
+    sal_get <- as.vector(ncvar_get(profile_C,"PSAL")) #read the salinity variable as one unique vector
     
     # read the qc sal 
     sal_qc<-NULL
-    for (ik in 1:dim(ncvar_get(profile,"PSAL_QC"))) {
-      sal_qc<-paste(sal_qc,ncvar_get(profile,"PSAL_QC")[ik],sep="")
+    for (ik in 1:dim(ncvar_get(profile_C,"PSAL_QC"))) {
+      sal_qc<-paste(sal_qc,ncvar_get(profile_C,"PSAL_QC")[ik],sep="")
     }
     
     # attribute NA to sal values with bad qc
@@ -240,13 +265,15 @@ Dark_MLD_table_coriolis<-function (WMO,chemin,index_ifremer) {
     ######################### CHL 
     ###############################
     
-    if ("CHLA" %in% names(profile$var)==F) { # test if the chla variable is present in the netcdf file (skip if not)
-      nc_close(profile) #close the netcdf
-      next
+    if ("CHLA" %in% names(profile_B$var)==F) { # test if the chla variable is present in the netcdf file (skip if not)
+        #nc_close(profile)
+        nc_close(profile_C)
+        nc_close(profile_B)
+        next
     }
     
     chl_get<-NA
-    chl_get <- as.vector(ncvar_get(profile,"CHLA"))  #read the PAR variable as one unique vector
+    chl_get <- as.vector(ncvar_get(profile_B,"CHLA"))  #read the PAR variable as one unique vector
     chl_all<-NA
     chl_all<-chl_get
     
@@ -267,8 +294,10 @@ Dark_MLD_table_coriolis<-function (WMO,chemin,index_ifremer) {
     
     # Test if the chl values are associated to only one depth (error of the measurement: "stuck pressure); if so, skip
     if(length(unique(dep_chl))==1) {
-      nc_close(profile) #close the netcdf file
-      next
+        #nc_close(profile)
+        nc_close(profile_C)
+        nc_close(profile_B)
+        next
     }
     
     
@@ -287,7 +316,9 @@ Dark_MLD_table_coriolis<-function (WMO,chemin,index_ifremer) {
         deep_table<-rbind(deep_table,profile_dark) # bind the profile dataframe to the time serie dataframe
       }
     }
-    nc_close(profile) # close the netcdf file
+    #nc_close(profile)
+    nc_close(profile_C)
+    nc_close(profile_B)
   }
   
   ###################################
