@@ -91,9 +91,9 @@ lon<-index_ifremer[,4] #retrieve the longitude of all profiles as a vector
 #                "6901527_040.", # case of NPQ correction with the PAR profile
 #                "5904686_040."# case of NPQ correction without the PAR profile
 #                )
-profile_list<-c("6901032_009.")
+profile_list<-c("6901524_150.")
 #path_to_netcdf = "~/Documents/data/chla_night_profiles/"
-path_to_netcdf = "~/Documents/test/ftp.ifremer.fr/ifremer/argo/dac/"
+path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
 
 
 ########################################################################################################
@@ -143,8 +143,21 @@ for (profile_actual in profile_list) {
   ############# C) OPEN THE FILE
   #################
   
+  path_split = unlist( strsplit(files[i],"/") )
+  path_to_profile = paste(path_split[1], path_split[2], path_split[3], sep="/")
+  
+  filenc_name_M = path_split[4]
+  filenc_name_C = substring(filenc_name_M, 2)
+  filenc_name_B = paste("B", filenc_name_C, sep="")
+  
+  file_M = files[i]
+  file_C = paste(path_to_profile, filenc_name_C, sep="/")
+  file_B = paste(path_to_profile, filenc_name_B, sep="/")
+  
   profile<-NULL
-  profile <- nc_open(paste(path_to_netcdf,files[i],sep=""),readunlim=FALSE,write=FALSE)
+  profile <- nc_open(paste(path_to_netcdf, file_M, sep=""), readunlim=FALSE, write=FALSE)
+  profile_C <- nc_open(paste(path_to_netcdf ,file_C, sep=""), readunlim=FALSE, write=FALSE)
+  profile_B <- nc_open(paste(path_to_netcdf, file_B, sep=""), readunlim=FALSE, write=FALSE)
   
   #################
   ############# D) POSITION INFORMATIONS : LON / LAT / DATE
