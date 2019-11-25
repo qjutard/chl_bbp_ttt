@@ -550,6 +550,12 @@ for (profile_actual in profile_list) {
   chl_with_na[chl_not_isna] = chl_unsorted
   bbp_with_na[bbp_not_isna] = bbp_unsorted
   
+  ### separate the profiles
+  chl_get_array = ncvar_get(profile_B, "CHLA")
+  bbp_get_array = ncvar_get(profile_B, "BBP700")
+  chl_array = array(chl_with_na, dim(chl_get_array))
+  bbp_array = array(bbp_with_na, dim(bbp_get_array))
+  
   ############################
   ############ K) CLOSE THE NETCDF PROFILE
   ############################
