@@ -434,6 +434,7 @@ for (profile_actual in profile_list) {
     chl_npq<-NPQ_cor_P18(chl_dark/2,dep_chl,MLD)
   }
   
+  flag_NPQ_changed = chl_npq!=chl_dark/2 # save the values that were changed by the NPQ correction to later write QC
   
   ############################
   ############ H) BBP700 RETRIEVAL AND TREATMENT
@@ -540,8 +541,8 @@ for (profile_actual in profile_list) {
   
   ### unsort vectors
   chl_unsorted = chl_fin
-  chl_unsorted[order(pres_chl_unsorted)] = chl_fin
   bbp_unsorted = bbp_fin
+  chl_unsorted[order(pres_chl_unsorted)] = chl_fin
   bbp_unsorted[order(pres_bbp_unsorted)] = bbp_fin
   
   ### add NA values
@@ -557,7 +558,31 @@ for (profile_actual in profile_list) {
   bbp_array = array(bbp_with_na, dim(bbp_get_array))
   
   ############################
-  ############ K) CLOSE THE NETCDF PROFILE
+  ############ K) create flags
+  ############################
+  
+  chl_adjusted_qc = array(" ", dim(chl_get_array))
+  bbp_adjusted_qc = array(" ", dim(bbp_get_array))
+  
+  ### chl flags
+  chl_adjusted_qc[which(!is.na(chl_array))] = "2" # start with a 2 if a value exists
+  chl_adjusted_qc[which( is.na(chl_array) & !is.na(chl_get_array) )] = "4" # write a "4" if the method removed a value
+  
+  # place the NPQ flags on the original array
+  flag_unsorted = flag_NPQ_changed
+  flag_unsorted[order(pres_chl_unsorted)] = flag_NPQ_changed
+  flag_with_na = rep(NA,length(chl_get))
+  flag_with_na[chl_not_isna] = flag_unsorted
+  flag_array = array(flag_with_na, dim(chl_get_array))
+  
+  chl_adjusted_qc[which( flag_array )] = "5" # write a "5" where the NPQ correction changed a value
+  
+  ### bbp flags
+  bbp_adjusted_qc[which(!is.na(bbp_array))] = "1" # start with a 1 if a value exists
+  bbp_adjusted_qc[which( is.na(bbp_array) & !is.na(bbp_get_array) )] = "4" # write a "4" if the method removed a value
+  
+  ############################
+  ############ L) CLOSE THE NETCDF PROFILE
   ############################
   #nc_close(profile)
   nc_close(profile_C)
