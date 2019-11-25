@@ -114,7 +114,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   # Skip if the profile is a descent one (optional)
   if(substr(profile_actual,12,12)=="D") {
     print("Descent Profile")
-    next
+    return(NULL)
   } 
   
   #################
@@ -155,22 +155,22 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   filenc_name_C = NA
   filenc_name_B = NA
   filenc_name_M = path_split[4]
-  filenc_name_C = substring(filenc_name_M, 2)
+  filenc_name_C = paste("?",substring(filenc_name_M, 3),sep="")
   filenc_name_B = paste("B", filenc_name_C, sep="")
   
   file_M = NA
   file_C = NA
   file_B = NA
   file_M = files[i]
-  file_C = paste(path_to_profile, filenc_name_C, sep="/")
-  file_B = paste(path_to_profile, filenc_name_B, sep="/")
+  file_C = paste(path_to_netcdf, path_to_profile,"/", filenc_name_C, sep="") 
+  file_C = system2("ls",file_C,stdout=TRUE) # identify R or D file 
+  file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
+  file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
   
-  #profile<-NULL
-  #profile <- nc_open(paste(path_to_netcdf, file_M, sep=""), readunlim=FALSE, write=FALSE)
   profile_C<-NULL
   profile_B<-NULL
-  profile_C <- nc_open(paste(path_to_netcdf , file_C, sep=""), readunlim=FALSE, write=FALSE)
-  profile_B <- nc_open(paste(path_to_netcdf, file_B, sep=""), readunlim=FALSE, write=FALSE)
+  profile_C <- nc_open(file_C, readunlim=FALSE, write=FALSE)
+  profile_B <- nc_open(file_B, readunlim=FALSE, write=FALSE)
   
   #################
   ############# D) POSITION INFORMATIONS : LON / LAT / DATE
@@ -185,7 +185,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf
     nc_close(profile_C)
     nc_close(profile_B)
-    next 
+    return(NULL)
   }
   
   lat<-NA
@@ -199,7 +199,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf
     nc_close(profile_C)
     nc_close(profile_B)
-    next
+    return(NULL)
   }
   
   jd<-NA
@@ -217,7 +217,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf
     nc_close(profile_C)
     nc_close(profile_B)
-    next
+    return(NULL)
   }
   
   # skip the profile if julian date qc is bad
@@ -226,7 +226,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf
     nc_close(profile_C)
     nc_close(profile_B)
-    next
+    return(NULL)
   }
   
   ###################
@@ -393,7 +393,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf
     nc_close(profile_C)
     nc_close(profile_B)
-    next
+    return(NULL)
   }
   
   chl_get<-NA
@@ -426,7 +426,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf file
     nc_close(profile_C)
     nc_close(profile_B)
-    next
+    return(NULL)
   }
   
   
