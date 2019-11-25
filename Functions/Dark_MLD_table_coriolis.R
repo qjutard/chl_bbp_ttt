@@ -53,26 +53,31 @@ Dark_MLD_table_coriolis<-function (WMO,chemin,index_ifremer) {
       next
     } 
     
-    #open the file
-    #profile<-NULL
-    #profile <- nc_open(paste(chemin,i,sep=""),readunlim=FALSE,write=FALSE)
+    path_split = NA
     path_split = unlist( strsplit(i,"/") )
+    path_to_profile = NA
     path_to_profile = paste(path_split[1], path_split[2], path_split[3], sep="/")
     
+    filenc_name_M = NA
+    filenc_name_C = NA
+    filenc_name_B = NA
     filenc_name_M = path_split[4]
-    filenc_name_C = substring(filenc_name_M, 2)
+    filenc_name_C = paste("?",substring(filenc_name_M, 3),sep="")
     filenc_name_B = paste("B", filenc_name_C, sep="")
     
-    file_M = i
-    file_C = paste(path_to_profile, filenc_name_C, sep="/")
-    file_B = paste(path_to_profile, filenc_name_B, sep="/")
+    file_M = NA
+    file_C = NA
+    file_B = NA
+    file_M = files[i]
+    file_C = paste(path_to_netcdf, path_to_profile,"/", filenc_name_C, sep="") 
+    file_C = system2("ls",file_C,stdout=TRUE) # identify R or D file 
+    file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
+    file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
     
-    #profile<-NULL
     profile_C<-NULL
     profile_B<-NULL
-    #profile <- nc_open(paste(chemin, file_M, sep=""), readunlim=FALSE, write=FALSE)
-    profile_C <- nc_open(paste(chemin , file_C, sep=""), readunlim=FALSE, write=FALSE)
-    profile_B <- nc_open(paste(chemin, file_B, sep=""), readunlim=FALSE, write=FALSE)
+    profile_C <- nc_open(file_C, readunlim=FALSE, write=FALSE)
+    profile_B <- nc_open(file_B, readunlim=FALSE, write=FALSE)
     
     #################
     ############# POSITION : LON / LAT / DATE
