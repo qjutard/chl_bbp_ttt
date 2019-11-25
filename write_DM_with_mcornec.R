@@ -25,12 +25,6 @@ DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, i
 
 write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL){
     
-    L = process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST)
-    if (is.null(L)){
-        print("process_file(...) did not end properly")
-        return(NULL)
-    }
-    
     files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
     ident<-strsplit(files,"/") #separate the different roots of the files paths
     ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
@@ -38,6 +32,21 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     i <-which(substr(prof_id,3,14)==profile_actual) #identify profile position in the index
     
+    ############################
+    ### Get the chla and bbp corrections from the method
+    ############################
+    L = process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST)
+    if (is.null(L)){
+        print("process_file(...) did not end properly")
+        return(NULL)
+    }
+    CHLA_ADJUSTED = L$CHLA_ADJUSTED
+    BBP700_ADJUSTED = L$BBP700_ADJUSTED
+    CHLA_ADJUSTED_QC = L$CHLA_ADJUSTED_QC
+    BBP700_ADJUSTED_QC = L$BBP700_ADJUSTED_QC
+    CHLA_ADJUSTED_ERROR = L$CHLA_ADJUSTED_ERROR
+    BBP700_ADJUSTED_ERROR = L$BBP700_ADJUSTED_ERROR
+
     ############################
     ### Open input and output files
     ############################
@@ -56,14 +65,28 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     path_split_B = unlist( strsplit(file_B, "/") )
     B_type = substr(path_split_B[length(path_split_B)],1,2)
     if (B_type=="BD"){
-        print("a BD-file has been given as an input, these are not treated for now")
+        print("a BD-file has been given as an input, these are currently not accepted")
         return(NULL)
     }
-
-    profile_B <- nc_open(file_B, readunlim=FALSE, write=FALSE)
-    #profile_D <- nc_open(file_out, readunlim=FALSE, write=TRUE)
     
-    nc_close(profile_B)
+    ### create the output file as a copy of the input
+    system2("cp", paste(file_B, file_out))
+    
+    #filenc_in <- nc_open(file_B, readunlim=FALSE, write=FALSE)
+    filenc_out <- nc_open(file_out, readunlim=FALSE, write=TRUE)
+    
+    ############################
+    ### Write correction from method to BD-file
+    ############################
+    ncvar_put(filenc_out,"CHLA_ADJUSTED",CHLA_ADJUSTED)
+    ncvar_put(filenc_out,"BBP700_ADJUSTED",BBP700_ADJUSTED)
+    ncvar_put(filenc_out,"CHLA_ADJUSTED_QC",CHLA_ADJUSTED_QC)
+    ncvar_put(filenc_out,"BBP700_ADJUSTED_QC",BBP700_ADJUSTED_QC)
+    ncvar_put(filenc_out,"CHLA_ADJUSTED_ERROR",CHLA_ADJUSTED_ERROR)
+    ncvar_put(filenc_out,"BBP700_ADJUSTED_ERROR",BBP700_ADJUSTED_ERROR)
+    
+    #nc_close(filenc_in)
+    nc_close(filenc_out)
     
     return(0)
     
