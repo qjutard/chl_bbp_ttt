@@ -397,6 +397,7 @@ for (profile_actual in profile_list) {
   pres_chl<-pres[which(!is.na(pres)==T & !is.na(chl_all)==T)] # attribute pressure vector corresponding to the chl values (with no NAs)
   chl<-NA
   chl<-chl_all[which(!is.na(pres)==T & !is.na(chl_all)==T)]# remove NAs from the chl vector
+  pres_chl_unsorted = pres_chl # save the vector before it was sorted to allow for unsorting
   chl<-chl[order(pres_chl)] # order the chl vector according to the increasing pressure
   pres_chl<-pres_chl[order(pres_chl)] # order the pressure vector corresponding to the chl
   
@@ -449,6 +450,7 @@ for (profile_actual in profile_list) {
   pres_bbp<-pres[which(!is.na(pres)==T & !is.na(bbp_all)==T)] # attribute pressure vector corresponding to the bbp values (with no NAs)
   bbp<-NA
   bbp<-bbp_all[which(!is.na(pres)==T & !is.na(bbp_all)==T)]# remove NAs from the bbp vector
+  pres_bbp_unsorted = pres_bbp # save the vector before it was sorted to allow for unsorting
   bbp<-bbp[order(pres_bbp)] # order the bbp vector according to the increasing pressure
   pres_bbp<-pres_bbp[order(pres_bbp)] # order the pressure vector corresponding to the bbp
   
@@ -525,9 +527,22 @@ for (profile_actual in profile_list) {
        xlim=(range(chl)),las=1)
   mtext(www, side=1, line=2, cex = 1.7)
   
+  ############################
+  ############ J) REFORMAT TO NETCDF ORIGINAL SIZES
+  ############################
+  
+  chl_fin = chl_npq # chl after all corrections were applied
+  bbp_fin = bbp     # bbp after all corrections were applied
+  
+  ### unsort vectors
+  chl_unsorted = chl_fin
+  chl_unsorted[order(pres_chl_unsorted)] = chl_fin
+  bbp_unsorted = bbp_fin
+  bbp_unsorted[order(pres_bbp_unsorted)] = bbp_fin
+
   
   ############################
-  ############ J) CLOSE THE NETCDF PROFILE
+  ############ K) CLOSE THE NETCDF PROFILE
   ############################
   #nc_close(profile)
   nc_close(profile_C)
