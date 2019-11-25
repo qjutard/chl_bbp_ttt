@@ -31,15 +31,15 @@
 ### I) plot the Fchla and bbp profiles before and after correction
 ### J) close the netcdf profile
 
-rm(list = ls())
+#rm(list = ls())
 
 ####################
 ############### LIBRARIES
 ###################
 
-library(ncdf4) #deal with netcdf format files
-library(oce) #calculate density sigma
-library(MASS)
+require(ncdf4) #deal with netcdf format files
+require(oce) #calculate density sigma
+require(MASS)
 
 ####################
 ############### FUNCTIONS
@@ -64,7 +64,7 @@ source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the d
 ###################
 
 # Read the merge file index
-index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
+#index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
 
 ####################
 ###############  INITIALIZE THE VECTOR OF PROFILES TO TREAT
@@ -80,9 +80,9 @@ index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=
 #                "6901527_040.", # case of NPQ correction with the PAR profile
 #                "5904686_040."# case of NPQ correction without the PAR profile
 #                )
-profile_list<-c("6901524_150.")
+#profile_list<-c("6901524_150.")
 #path_to_netcdf = "~/Documents/data/chla_night_profiles/"
-path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
+#path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
 
 
 ########################################################################################################
@@ -658,8 +658,8 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
 }
 
-profile_actual = profile_list[1]
-DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
+#profile_actual = profile_list[1]
+#DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
 
-L = process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST)
+#L = process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST)
 
