@@ -143,13 +143,21 @@ for (profile_actual in profile_list) {
   ############# C) OPEN THE FILE
   #################
   
+  path_split = NA
   path_split = unlist( strsplit(files[i],"/") )
+  path_to_profile = NA
   path_to_profile = paste(path_split[1], path_split[2], path_split[3], sep="/")
   
+  filenc_name_M = NA
+  filenc_name_C = NA
+  filenc_name_B = NA
   filenc_name_M = path_split[4]
   filenc_name_C = substring(filenc_name_M, 2)
   filenc_name_B = paste("B", filenc_name_C, sep="")
   
+  file_M = NA
+  file_C = NA
+  file_B = NA
   file_M = files[i]
   file_C = paste(path_to_profile, filenc_name_C, sep="/")
   file_B = paste(path_to_profile, filenc_name_B, sep="/")
@@ -393,12 +401,14 @@ for (profile_actual in profile_list) {
   ############ 1) RANGE TEST : attribute NA to values out of range ###########################
   chl_all[which((chl_all > 50) | (chl_all < - 0.1))]<-NA
   
+  chl_not_isna = NA
   chl_not_isna = which(!is.na(pres)==T & !is.na(chl_all)==T) # keep the information on NA values to later add them
   
   pres_chl<-NA
   pres_chl<-pres[chl_not_isna] # attribute pressure vector corresponding to the chl values (with no NAs)
   chl<-NA
   chl<-chl_all[chl_not_isna]# remove NAs from the chl vector
+  pres_chl_unsorted = NA
   pres_chl_unsorted = pres_chl # save the vector before it was sorted to allow for unsorting
   chl<-chl[order(pres_chl)] # order the chl vector according to the increasing pressure
   pres_chl<-pres_chl[order(pres_chl)] # order the pressure vector corresponding to the chl
@@ -434,6 +444,7 @@ for (profile_actual in profile_list) {
     chl_npq<-NPQ_cor_P18(chl_dark/2,dep_chl,MLD)
   }
   
+  flag_NPQ_changed = NA
   flag_NPQ_changed = chl_npq!=chl_dark/2 # save the values that were changed by the NPQ correction to later write QC
   
   ############################
@@ -449,12 +460,14 @@ for (profile_actual in profile_list) {
   ################### 1) RANGE TEST ###############################
   bbp_all[which((bbp_all > 0.1) | (bbp_all <  (-0.000005)))]<-NA
   
+  bbp_not_isna = NA
   bbp_not_isna = which(!is.na(pres)==T & !is.na(bbp_all)==T) # keep the information on NA values to later add them
   
   pres_bbp<-NA
   pres_bbp<-pres[bbp_not_isna] # attribute pressure vector corresponding to the bbp values (with no NAs)
   bbp<-NA
   bbp<-bbp_all[bbp_not_isna]# remove NAs from the bbp vector
+  pres_bbp_unsorted = NA
   pres_bbp_unsorted = pres_bbp # save the vector before it was sorted to allow for unsorting
   bbp<-bbp[order(pres_bbp)] # order the bbp vector according to the increasing pressure
   pres_bbp<-pres_bbp[order(pres_bbp)] # order the pressure vector corresponding to the bbp
@@ -561,12 +574,12 @@ for (profile_actual in profile_list) {
   ############ K) create flags
   ############################
   
-  chl_adjusted_qc = array(" ", dim(chl_get_array))
-  bbp_adjusted_qc = array(" ", dim(bbp_get_array))
+  chl_qc = array(" ", dim(chl_get_array))
+  bbp_qc = array(" ", dim(bbp_get_array))
   
   ### chl flags
-  chl_adjusted_qc[which(!is.na(chl_array))] = "2" # start with a 2 if a value exists
-  chl_adjusted_qc[which( is.na(chl_array) & !is.na(chl_get_array) )] = "4" # write a "4" if the method removed a value
+  chl_qc[which(!is.na(chl_array))] = "2" # start with a 2 if a value exists
+  chl_qc[which( is.na(chl_array) & !is.na(chl_get_array) )] = "4" # write a "4" if the method removed a value
   
   # place the NPQ flags on the original array
   flag_unsorted = flag_NPQ_changed
@@ -575,11 +588,57 @@ for (profile_actual in profile_list) {
   flag_with_na[chl_not_isna] = flag_unsorted
   flag_array = array(flag_with_na, dim(chl_get_array))
   
-  chl_adjusted_qc[which( flag_array )] = "5" # write a "5" where the NPQ correction changed a value
+  chl_qc[which( flag_array )] = "5" # write a "5" where the NPQ correction changed a value
   
   ### bbp flags
-  bbp_adjusted_qc[which(!is.na(bbp_array))] = "1" # start with a 1 if a value exists
-  bbp_adjusted_qc[which( is.na(bbp_array) & !is.na(bbp_get_array) )] = "4" # write a "4" if the method removed a value
+  bbp_qc[which(!is.na(bbp_array))] = "1" # start with a 1 if a value exists
+  bbp_qc[which( is.na(bbp_array) & !is.na(bbp_get_array) )] = "4" # write a "4" if the method removed a value
+  
+  ### convert to string-words
+  chl_adjusted_qc = rep(NA, dim(chl_qc)[2])
+  bbp_adjusted_qc = rep(NA, dim(bbp_qc)[2]) #dim(bbp_qc)==dim(chl_qc)
+  for (j in seq(1,dim(chl_qc)[2])){
+      chl_adjusted_qc[j] = paste(chl_qc[,j],collapse="")
+      bbp_adjusted_qc[j] = paste(bbp_qc[,j],collapse="")
+  }
+  
+  ############################
+  ############ K) create error arrays
+  ############################
+  
+  ### open the metadata
+  path_to_meta = paste(path_to_netcdf, path_split[1], "/", path_split[2], "/", substring(profile_actual,1,7), "_meta.nc",sep="") # build meta file adress
+  
+  meta_nc = nc_open(path_to_meta) # open meta file
+  
+  calib = ncvar_get(meta_nc,"PREDEPLOYMENT_CALIB_COEFFICIENT") # get the cailbration coefficients
+  
+  ### get the scales
+  
+  # chla scale
+  id_chla = grep("CHLA", calib) # find chla index
+  chla_calib = calib[id_chla] # get chla calibration
+  chla_calib = unlist(strsplit(chla_calib,",")) # separate coefficients
+  chla_calib_scale = chla_calib[grep("SCALE_CHLA",chla_calib)] # get the scale information
+  chla_calib_scale = unlist(strsplit(chla_calib_scale,"=")) # separate the name from the number
+  
+  chla_scale = as.numeric(chla_calib_scale[2]) # get the scale coefficient as a number
+  
+  # bbp scale
+  id_bbp = grep("BACKSCATTERING700", calib) # find bbp index
+  bbp_calib = calib[id_bbp] # get chla calibration
+  bbp_calib = unlist(strsplit(bbp_calib,",")) # separate coefficients
+  bbp_calib_scale = bbp_calib[grep("SCALE_BACKSCATTERING700",bbp_calib)] # get the scale information
+  bbp_calib_scale = unlist(strsplit(bbp_calib_scale,"=")) # separate the name from the number
+  
+  bbp_scale = as.numeric(bbp_calib_scale[2]) # get the scale coefficient as a number
+  
+  nc_close(meta_nc) # close meta
+  
+  ### create error arrays
+  chl_error = pmax( 3 * array(chla_scale, dim(chl_array)), 1.5 * chl_array)
+  bbp_error = pmax( 3 * array(bbp_scale, dim(bbp_array)), 0.2 * bbp_array)
+  
   
   ############################
   ############ L) CLOSE THE NETCDF PROFILE
