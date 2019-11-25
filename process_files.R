@@ -65,17 +65,6 @@ source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the d
 
 # Read the merge file index
 index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
-files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
-ident<-strsplit(files,"/") #separate the different roots of the files paths
-ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
-dac<-ident[,1] #retrieve the DAC of all profiles as a vector
-wod<-ident[,2] #retrieve the WMO of all profiles as a vector
-prof_id<-ident[,4] #retrieve all profiles  name as a vector
-variables<-as.character(index_ifremer[,8]) #retrieve the list of variables available in each file
-variables<-strsplit(variables," ") #separate the different available variables of each profile
-lat<-index_ifremer[,3] #retrieve the latitude of all profiles as a vector
-lon<-index_ifremer[,4] #retrieve the longitude of all profiles as a vector
-
 
 ####################
 ###############  INITIALIZE THE VECTOR OF PROFILES TO TREAT
@@ -103,11 +92,24 @@ path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
 ########################################################################################################
 
 
-dark_old<-"XXXXXXX" # initiate the dark marker (use to calculate a dark correction on a float time serie) 
+#dark_old<-"XXXXXXX" # initiate the dark marker (use to calculate a dark correction on a float time serie) 
 
-for (profile_actual in profile_list) {
-  
+#for (profile_actual in profile_list) {
+
+process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, plot_chla=FALSE){ 
+ 
   print(profile_actual)
+
+  files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
+  ident<-strsplit(files,"/") #separate the different roots of the files paths
+  ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
+  dac<-ident[,1] #retrieve the DAC of all profiles as a vector
+  wod<-ident[,2] #retrieve the WMO of all profiles as a vector
+  prof_id<-ident[,4] #retrieve all profiles  name as a vector
+  variables<-as.character(index_ifremer[,8]) #retrieve the list of variables available in each file
+  variables<-strsplit(variables," ") #separate the different available variables of each profile
+  lat<-index_ifremer[,3] #retrieve the latitude of all profiles as a vector
+  lon<-index_ifremer[,4] #retrieve the longitude of all profiles as a vector
   
   # Skip if the profile is a descent one (optional)
   if(substr(profile_actual,12,12)=="D") {
@@ -129,15 +131,16 @@ for (profile_actual in profile_list) {
   
   # Calculation of the Dark time series to identify if deep vertical mixing offset will be needed on profiles of this float time serie
   # This is done once per float
-  dark_new<-NA
-  dark_new<-substr(profile_actual,1,7) # attribute the actual wmo to the dark marker
-  if (dark_new!=dark_old) { #test if the profile is from a new WMO or not
+  #dark_new<-NA
+  #dark_new<-substr(profile_actual,1,7) # attribute the actual wmo to the dark marker
+  #if (dark_new!=dark_old) { #test if the profile is from a new WMO or not
+  if (is.null(DEEP_EST)){ ### if DEEP_EST is not given as argument, compute it (if several profiles from the same float will be used, it should be calculated once and given as argument)
     print("dark TS calc")
-    DEEP_EST<-NULL
+    #DEEP_EST<-NULL
     DEEP_EST<-Dark_MLD_table_coriolis(substr(profile_actual,1,7), # calculation of the dark time serie (Dark_MLD_table_coriolis function)
                                       path_to_netcdf,index_ifremer)
   }
-  dark_old<-dark_new #attribute the actual wmo to the dark marker for the next profile
+  #dark_old<-dark_new #attribute the actual wmo to the dark marker for the next profile
   
   #################
   ############# C) OPEN THE FILE
@@ -526,24 +529,26 @@ for (profile_actual in profile_list) {
   ############################
   ############ I) PLOT THE PROFILES BEFORE/AFTER CORRECTION
   ############################
-  par(mar=c(5,6.5,5,1.5))
-  plot(chl_npq,-dep_chl,
-       xlab = NA, ylab=NA,col="red",pch=16,xaxt="n",yaxt="n",cex=0.8,type="p",
-       ylim=c(-400,0),
-       # xlim=(c(min(chl,na.rm = T),
-       #         max(chl,na.rm = T))),las=1)
-       xlim=(range(chl)),las=1)
+  if (plot_chla) {
+      par(mar=c(5,6.5,5,1.5))
+      plot(chl_npq,-dep_chl,
+           xlab = NA, ylab=NA,col="red",pch=16,xaxt="n",yaxt="n",cex=0.8,type="p",
+           ylim=c(-400,0),
+           # xlim=(c(min(chl,na.rm = T),
+           #         max(chl,na.rm = T))),las=1)
+           xlim=(range(chl)),las=1)
   
-  axis(3,col.axis = "black",cex.axis=2)
-  mtext(expression(paste("Fchl",italic(a),sep="")~(mg~chl~m^{-3})), side=3, line=2.7, cex = 2, col="black")
-  axis(2,cex.axis=2, las=1)
-  mtext("Depth (m)", side=2, line=4.2, cex = 2)
-  par(new=T)
-  plot(chl,-dep_chl,cex=0.8,type="p",pch=16,
-       xlab = NA, ylab=NA,xaxt="n",yaxt="n",col="black",
-       ylim=c(-400,0),
-       xlim=(range(chl)),las=1)
-  mtext(www, side=1, line=2, cex = 1.7)
+      axis(3,col.axis = "black",cex.axis=2)
+      mtext(expression(paste("Fchl",italic(a),sep="")~(mg~chl~m^{-3})), side=3, line=2.7, cex = 2, col="black")
+      axis(2,cex.axis=2, las=1)
+      mtext("Depth (m)", side=2, line=4.2, cex = 2)
+      par(new=T)
+      plot(chl,-dep_chl,cex=0.8,type="p",pch=16,
+           xlab = NA, ylab=NA,xaxt="n",yaxt="n",col="black",
+           ylim=c(-400,0),
+           xlim=(range(chl)),las=1)
+      mtext(www, side=1, line=2, cex = 1.7)
+  }
   
   ############################
   ############ J) REFORMAT TO NETCDF ORIGINAL SIZES
@@ -647,4 +652,14 @@ for (profile_actual in profile_list) {
   nc_close(profile_C)
   nc_close(profile_B)
   
+  return(list("CHLA_ADJUSTED"=chl_array, "BBP700_ADJUSTED"=bbp_array, 
+              "CHLA_ADJUSTED_QC"=chl_adjusted_qc, "BBP700_ADJUSTED_QC"=bbp_adjusted_qc,
+              "CHLA_ADJUSTED_ERROR"=chl_error, "BBP700_ADJUSTED_ERROR"=bbp_error))
+  
 }
+
+profile_actual = profile_list[1]
+DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
+
+L = process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST)
+
