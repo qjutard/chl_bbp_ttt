@@ -10,6 +10,7 @@ rm(list = ls())
 library(ncdf4) #deal with netcdf format files
 library(oce) #calculate density sigma
 library(MASS)
+library(stringr)
 
 source("process_files.R")
 
@@ -76,8 +77,26 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     filenc_out <- nc_open(file_out, readunlim=FALSE, write=TRUE)
     
     ############################
+    ### Find some parameter indices and define date
+    ############################
+    
+    parameters=ncvar_get(filenc_out,"STATION_PARAMETERS")
+    
+    id_param_chl = idc=grep("CHLA                                                            ",parameters)
+    id_param_bbp = idc=grep("BBP700                                                          ",parameters)
+    id_prof = which(parameters=="CHLA                                                            ", arr.ind=TRUE)[2] # The CHL and BBP share the same profile
+    
+    date = Sys.time()
+    date = str_sub(date,1,19)
+    date = unlist(strsplit(date, "-"))
+    date = unlist(strsplit(date, " "))
+    date = unlist(strsplit(date, ":"))
+    DATE = paste(date, collapse="")
+    
+    ############################
     ### Write correction from method to BD-file
     ############################
+    
     ncvar_put(filenc_out,"CHLA_ADJUSTED",CHLA_ADJUSTED)
     ncvar_put(filenc_out,"BBP700_ADJUSTED",BBP700_ADJUSTED)
     ncvar_put(filenc_out,"CHLA_ADJUSTED_QC",CHLA_ADJUSTED_QC)
@@ -85,6 +104,38 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ncvar_put(filenc_out,"CHLA_ADJUSTED_ERROR",CHLA_ADJUSTED_ERROR)
     ncvar_put(filenc_out,"BBP700_ADJUSTED_ERROR",BBP700_ADJUSTED_ERROR)
     
+    ############################
+    ### Write scientific_calib
+    ############################
+    
+    ### scientific calib information
+    scientific_comment_chl = "sample scientific comment chla" # TODO fill comment
+    scientific_comment_bbp = "sample scientific comment bbp700" # TODO fill comment
+    scientific_coefficient_chl = "sample scientific coefficient chla" # TODO fill coefficient
+    scientific_coefficient_bbp = "sample scientific coefficient bbp700" # TODO fill coefficient
+    scientific_equation_chl = "sample scientific equation chla" # TODO fill coefficient
+    scientific_equation_bbp = "sample scientific equation bbp700" # TODO fill coefficient
+    scientific_date_chl = DATE
+    scientific_date_bbp = DATE
+    
+    scientific_calib_chl = c(scientific_comment_chl, scientific_coefficient_chl, scientific_equation_chl, scientific_date_chl)
+    scientific_calib_bbp = c(scientific_comment_bbp, scientific_coefficient_bbp, scientific_equation_bbp, scientific_date_bbp)
+    SCIENTIFIC_CALIB_VARIABLE = paste("SCIENTIFIC_CALIB_",c("COMMENT", "COEFFICIENT", "EQUATION", "DATE"), sep="")
+    
+    for (i in seq(1,4)){
+        SCIENTIFIC_CALIB_INFO_CHL = str_pad(scientific_calib_chl[i], 256, "right")
+        SCIENTIFIC_CALIB_INFO_BBP = str_pad(scientific_calib_bbp[i], 256, "right")
+        
+        scientific_calib_info = ncvar_get(filenc_out, SCIENTIFIC_CALIB_VARIABLE[i])
+        
+        scientific_calib_info[id_param_chl] = SCIENTIFIC_CALIB_INFO_CHL
+        scientific_calib_info[id_param_bbp] = SCIENTIFIC_CALIB_INFO_BBP
+        
+        ncvar_put(filenc_out , SCIENTIFIC_CALIB_VARIABLE[i], scientific_calib_info)
+    
+        }
+    
+   
     #nc_close(filenc_in)
     nc_close(filenc_out)
     
