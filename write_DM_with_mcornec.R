@@ -85,6 +85,10 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     id_param_chl = idc=grep("CHLA                                                            ",parameters)
     id_param_bbp = idc=grep("BBP700                                                          ",parameters)
     id_prof = which(parameters=="CHLA                                                            ", arr.ind=TRUE)[2] # The CHL and BBP share the same profile
+    n_prof = dim(parameters)[2]
+    
+    N_HISTORY=filenc_out$dim[['N_HISTORY']]$len
+    i_history=N_HISTORY+1
     
     date = Sys.time()
     date = str_sub(date,1,19)
@@ -113,8 +117,8 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     scientific_comment_bbp = "sample scientific comment bbp700" # TODO fill comment
     scientific_coefficient_chl = "sample scientific coefficient chla" # TODO fill coefficient
     scientific_coefficient_bbp = "sample scientific coefficient bbp700" # TODO fill coefficient
-    scientific_equation_chl = "sample scientific equation chla" # TODO fill coefficient
-    scientific_equation_bbp = "sample scientific equation bbp700" # TODO fill coefficient
+    scientific_equation_chl = "sample scientific equation chla" # TODO fill equation
+    scientific_equation_bbp = "sample scientific equation bbp700" # TODO fill equation
     scientific_date_chl = DATE
     scientific_date_bbp = DATE
     
@@ -133,8 +137,34 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         
         ncvar_put(filenc_out , SCIENTIFIC_CALIB_VARIABLE[i], scientific_calib_info)
     
-        }
+    }
     
+    ############################
+    ### Write history
+    ############################
+    
+    ### Should this info only be written to the CHLA/BBP profile ?
+    ### TODO answer this and fill history information
+    
+    HISTORY_INSTITUTION = rep("XXXX", n_prof)
+    ncvar_put(filenc_out, "HISTORY_INSTITUTION", HISTORY_INSTITUTION, start=c(1,1,i_history), count=c(4,n_prof,1))
+    
+    HISTORY_STEP = rep("YYYY", n_prof)
+    ncvar_put(filenc_out, "HISTORY_STEP", HISTORY_STEP, start=c(1,1,i_history), count=c(4,n_prof,1))
+    
+    HISTORY_SOFTWARE = rep("ZZZZ", n_prof)
+    ncvar_put(filenc_out, "HISTORY_SOFTWARE", HISTORY_SOFTWARE, start=c(1,1,i_history), count=c(4,n_prof,1))
+    
+    HISTORY_SOFTWARE_RELEASE = rep("0000", n_prof)
+    ncvar_put(filenc_out, "HISTORY_SOFTWARE_RELEASE", HISTORY_SOFTWARE_RELEASE, start=c(1,1,i_history), count=c(4,n_prof,1))
+    
+    HISTORY_DATE = rep(DATE, n_prof)
+    ncvar_put(filenc_out, "HISTORY_DATE", HISTORY_DATE, start=c(1,1,i_history), count=c(14,n_prof,1))
+    
+    HISTORY_ACTION = rep("AAAA", n_prof)
+    ncvar_put(filenc_out, "HISTORY_ACTION", HISTORY_ACTION, start=c(1,1,i_history), count=c(4,n_prof,1))
+    
+
    
     #nc_close(filenc_in)
     nc_close(filenc_out)
