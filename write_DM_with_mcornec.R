@@ -173,6 +173,35 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ncvar_put(filenc_out, "HISTORY_ACTION", HISTORY_ACTION, start=c(1,1,i_history), count=c(4,n_prof,1))
     
     ############################
+    ### Write profile_QC
+    ############################
+    
+    chl_QC = unlist(strsplit(CHLA_ADJUSTED_QC[id_prof],""))
+    bbp_QC = unlist(strsplit(BBP700_ADJUSTED_QC[id_prof],""))
+
+    n_QC_chl = sum( chl_QC!=" " )
+    n_QC_bbp = sum( bbp_QC!=" " )
+    
+    n_good_chl = 100 * sum( chl_QC=="1" | chl_QC=="2" | chl_QC=="5" | chl_QC=="8" ) / n_QC_chl
+    n_good_bbp = 100 * sum( bbp_QC=="1" | bbp_QC=="2" | bbp_QC=="5" | bbp_QC=="8" ) / n_QC_bbp
+    
+    # Write CHLA profile QC
+    if ( n_good_chl == 0) ncvar_put(filenc_out,"PROFILE_CHLA_QC","F",start=id_prof, count=1)
+    if ( n_good_chl > 0 && n_good_chl < 25 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","E",start=id_prof, count=1)
+    if ( n_good_chl >= 25 && n_good_chl < 50 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","D",start=id_prof, count=1)
+    if ( n_good_chl >= 50 && n_good_chl < 75 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","C",start=id_prof, count=1)
+    if ( n_good_chl >= 75 && n_good_chl < 100 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","B",start=id_prof, count=1)
+    if ( n_good_chl == 100 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","A",start=id_prof, count=1)
+    
+    # Write BBP700 profile QC
+    if ( n_good_bbp == 0) ncvar_put(filenc_out,"PROFILE_BBP700_QC","F",start=id_prof, count=1)
+    if ( n_good_bbp > 0 && n_good_bbp < 25 ) ncvar_put(filenc_out,"PROFILE_BBP700_QC","E",start=id_prof, count=1)
+    if ( n_good_bbp >= 25 && n_good_bbp < 50 ) ncvar_put(filenc_out,"PROFILE_BBP700_QC","D",start=id_prof, count=1)
+    if ( n_good_bbp >= 50 && n_good_bbp < 75 ) ncvar_put(filenc_out,"PROFILE_BBP700_QC","C",start=id_prof, count=1)
+    if ( n_good_bbp >= 75 && n_good_bbp < 100 ) ncvar_put(filenc_out,"PROFILE_BBP700_QC","B",start=id_prof, count=1)
+    if ( n_good_bbp == 100 ) ncvar_put(filenc_out,"PROFILE_BBP700_QC","A",start=id_prof, count=1)
+        
+    ############################
     ### Write other info
     ############################
     
