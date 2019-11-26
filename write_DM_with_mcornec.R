@@ -82,10 +82,18 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     parameters=ncvar_get(filenc_out,"STATION_PARAMETERS")
     
-    id_param_chl = idc=grep("CHLA                                                            ",parameters)
-    id_param_bbp = idc=grep("BBP700                                                          ",parameters)
+    id_param_chl = grep("CHLA                                                            ",parameters)
+    id_param_bbp = grep("BBP700                                                          ",parameters)
     id_prof = which(parameters=="CHLA                                                            ", arr.ind=TRUE)[2] # The CHL and BBP share the same profile
+    id_param_chl_arr = which(parameters=="CHLA                                                            ", arr.ind=TRUE)
+    id_param_bbp_arr = which(parameters=="BBP700                                                          ", arr.ind=TRUE)
     n_prof = dim(parameters)[2]
+    
+    if ( length(id_param_chla)!=1 | length(id_param_bbp)!=1 ){
+        print("several profiles of chl or bbp detected")
+        nc_close(filenc_out)
+        return(NULL)
+    } 
     
     N_HISTORY=filenc_out$dim[['N_HISTORY']]$len
     i_history=N_HISTORY+1
@@ -164,7 +172,27 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     HISTORY_ACTION = rep("AAAA", n_prof)
     ncvar_put(filenc_out, "HISTORY_ACTION", HISTORY_ACTION, start=c(1,1,i_history), count=c(4,n_prof,1))
     
-
+    ############################
+    ### Write other info
+    ############################
+    
+    # DATA_MODE
+    ncvar_put(filenc_out, "DATA_MODE", "D", start=c(id_prof), count=c(1))
+    
+    # DATA_STATE_INDICATOR
+    DATA_STATE_INDICATOR = rep("XX  ", n_prof) #TODO fill info
+    ncvar_put(filenc_out, "DATA_STATE_INDICATOR", DATA_STATE_INDICATOR, start=c(1,1), count=c(4,n_prof))
+    
+    # PARAMETER_DATA_MODE
+    PARAMETER_DATA_MODE = ncvar_get(filenc_out,"PARAMETER_DATA_MODE")
+    str_sub(PARAMETER_DATA_MODE[id_param_chl_arr[2]], id_param_chl_arr[1],id_param_chl_arr[1]) = "D"
+    str_sub(PARAMETER_DATA_MODE[id_param_bbp_arr[2]], id_param_bbp_arr[1],id_param_bbp_arr[1]) = "D"
+    ncvar_put(filenc_out, "PARAMETER_DATA_MODE", PARAMETER_DATA_MODE)
+    
+    # DATE_UPDATE
+    ncvar_put(filenc_out, "DATE_UPDATE", DATE)
+    
+    
    
     #nc_close(filenc_in)
     nc_close(filenc_out)
