@@ -56,11 +56,11 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     filenc_name_M = path_split[4]
     filenc_name_B = paste("B?",substring(filenc_name_M, 3),sep="")
-    filenc_name_out = paste("BD",substring(filenc_name_M, 3,nchar(filenc_name_M)-3),"_test.nc",sep="")
+    filenc_name_out = paste("BD",substring(filenc_name_M, 3,nchar(filenc_name_M)-3),".nc",sep="")
     
     file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
     file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
-    file_out = paste(path_to_netcdf, path_to_profile,"/", filenc_name_out, sep="") 
+    file_out = paste(path_to_netcdf, path_to_profile,"/DM_cornec/", filenc_name_out, sep="") 
     
     ### check whether the existing file is a D file
     path_split_B = unlist( strsplit(file_B, "/") )
@@ -71,7 +71,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     }
     
     ### create the output file as a copy of the input
-    system2("cp", paste(file_B, file_out))
+    system2("cp", c(file_B, file_out))
     
     #filenc_in <- nc_open(file_B, readunlim=FALSE, write=FALSE)
     filenc_out <- nc_open(file_out, readunlim=FALSE, write=TRUE)
@@ -89,7 +89,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     id_param_bbp_arr = which(parameters=="BBP700                                                          ", arr.ind=TRUE)
     n_prof = dim(parameters)[2]
     
-    if ( length(id_param_chla)!=1 | length(id_param_bbp)!=1 ){
+    if ( length(id_param_chl)!=1 | length(id_param_bbp)!=1 ){
         print("several profiles of chl or bbp detected")
         nc_close(filenc_out)
         return(NULL)
@@ -98,7 +98,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     N_HISTORY=filenc_out$dim[['N_HISTORY']]$len
     i_history=N_HISTORY+1
     
-    date = Sys.time()
+    date = Sys.time() #TODO should it instead be a centralized timezone
     date = str_sub(date,1,19)
     date = unlist(strsplit(date, "-"))
     date = unlist(strsplit(date, " "))
@@ -154,23 +154,24 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Should this info only be written to the CHLA/BBP profile ?
     ### TODO answer this and fill history information
     
-    HISTORY_INSTITUTION = rep("XXXX", n_prof)
-    ncvar_put(filenc_out, "HISTORY_INSTITUTION", HISTORY_INSTITUTION, start=c(1,1,i_history), count=c(4,n_prof,1))
+    #HISTORY_INSTITUTION = rep("XXXX", n_prof)
+    HISTORY_INSTITUTION = "XXXX"
+    ncvar_put(filenc_out, "HISTORY_INSTITUTION", HISTORY_INSTITUTION, start=c(1,id_prof,i_history), count=c(4,1,1))
     
-    HISTORY_STEP = rep("YYYY", n_prof)
-    ncvar_put(filenc_out, "HISTORY_STEP", HISTORY_STEP, start=c(1,1,i_history), count=c(4,n_prof,1))
+    HISTORY_STEP = "YYYY"
+    ncvar_put(filenc_out, "HISTORY_STEP", HISTORY_STEP, start=c(1,id_prof,i_history), count=c(4,1,1))
     
     HISTORY_SOFTWARE = rep("ZZZZ", n_prof)
-    ncvar_put(filenc_out, "HISTORY_SOFTWARE", HISTORY_SOFTWARE, start=c(1,1,i_history), count=c(4,n_prof,1))
+    ncvar_put(filenc_out, "HISTORY_SOFTWARE", HISTORY_SOFTWARE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
     HISTORY_SOFTWARE_RELEASE = rep("0000", n_prof)
-    ncvar_put(filenc_out, "HISTORY_SOFTWARE_RELEASE", HISTORY_SOFTWARE_RELEASE, start=c(1,1,i_history), count=c(4,n_prof,1))
+    ncvar_put(filenc_out, "HISTORY_SOFTWARE_RELEASE", HISTORY_SOFTWARE_RELEASE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
     HISTORY_DATE = rep(DATE, n_prof)
-    ncvar_put(filenc_out, "HISTORY_DATE", HISTORY_DATE, start=c(1,1,i_history), count=c(14,n_prof,1))
+    ncvar_put(filenc_out, "HISTORY_DATE", HISTORY_DATE, start=c(1,id_prof,i_history), count=c(14,1,1))
     
     HISTORY_ACTION = rep("AAAA", n_prof)
-    ncvar_put(filenc_out, "HISTORY_ACTION", HISTORY_ACTION, start=c(1,1,i_history), count=c(4,n_prof,1))
+    ncvar_put(filenc_out, "HISTORY_ACTION", HISTORY_ACTION, start=c(1,id_prof,i_history), count=c(4,1,1))
     
     ############################
     ### Write profile_QC
