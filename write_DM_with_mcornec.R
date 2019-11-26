@@ -98,7 +98,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     N_HISTORY=filenc_out$dim[['N_HISTORY']]$len
     i_history=N_HISTORY+1
     
-    date = Sys.time() #TODO should it instead be a centralized timezone
+    date = print(Sys.time(), tz="UTC") #should it instead be a centralized timezone ?
     date = str_sub(date,1,19)
     date = unlist(strsplit(date, "-"))
     date = unlist(strsplit(date, " "))
@@ -221,6 +221,13 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     # DATE_UPDATE
     ncvar_put(filenc_out, "DATE_UPDATE", DATE)
+    
+    ############################
+    ### Change attributes
+    ############################
+    
+    comment_dmqc_operator = "PRIMARY | https://orcid.org/16-digit-number | operator name, institution" ### TODO fill
+    ncatt_put(filenc_out, varid=0, "comment_dmqc_operator", comment_dmqc_operator)
     
     
    
