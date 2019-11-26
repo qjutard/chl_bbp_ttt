@@ -11,18 +11,9 @@ library(ncdf4) #deal with netcdf format files
 library(oce) #calculate density sigma
 library(MASS)
 library(stringr)
+library(parallel)
 
 source("process_files.R")
-
-index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
-path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
-
-profile_list<-c("6901524_150.")
-profile_actual = profile_list[1]
-
-### DEEP_EST should be computed once per FLOAT 
-DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 
-
 
 write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL){
     
@@ -229,6 +220,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     comment_dmqc_operator = "PRIMARY | https://orcid.org/16-digit-number | operator name, institution" ### TODO fill
     ncatt_put(filenc_out, varid=0, "comment_dmqc_operator", comment_dmqc_operator)
     
+    #TODO change histoy attribute ?
     
    
     #nc_close(filenc_in)
@@ -238,4 +230,16 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
 }
 
-M = write_DM_MC(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST)
+
+index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
+path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
+
+profile_list<-c("6901524_150.","6901524_151.","6901524_152.","6901524_153.","6901524_154.","6901524_155.")
+profile_actual = profile_list[1]
+
+### DEEP_EST should be computed once per FLOAT 
+DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 
+
+#M = write_DM_MC(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST)
+
+M = mcmapply(write_DM_MC, profile_list, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST))
