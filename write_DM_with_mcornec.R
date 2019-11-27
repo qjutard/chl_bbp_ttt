@@ -27,10 +27,10 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ############################
     ### Get the chla and bbp corrections from the method
     ############################
-    L = process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST)
-    if (is.null(L)){
+    L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST), silent=TRUE)
+    if (!is.list(L)){
         print("process_file(...) did not end properly")
-        return(NULL)
+        return(L)
     }
     CHLA_ADJUSTED = L$CHLA_ADJUSTED
     BBP700_ADJUSTED = L$BBP700_ADJUSTED
@@ -241,8 +241,20 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
 index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
 path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
 
-profile_list<-c("6901524_150.","6901524_151.","6901524_152.","6901524_153.","6901524_154.","6901524_155.")
+files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
+ident<-strsplit(files,"/") #separate the different roots of the files paths
+ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
+prof_id<-ident[,4] #retrieve all profiles  name as a vector
+
+
+profile_WMO = "6901524"
+prof_id_WMO = substr(prof_id, 3, 9)
+profile_list_all = substr(prof_id[which(prof_id_WMO==profile_WMO)], 3, 14)
+
+
+profile_list<-c("6901524_150.","6901524_151.","6901524_152.","6901524_153.","6901524_154.","6901524_155.","6901524_001D")
 profile_actual = profile_list[1]
+profile_actual = "6901524_233."
 
 ### DEEP_EST should be computed once per FLOAT 
 DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 
@@ -251,4 +263,4 @@ DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, i
 
 numCores = detectCores()
 
-M = mcmapply(write_DM_MC, profile_list, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST), mc.cores=numCores)
+M = mcmapply(write_DM_MC, profile_list_all[231:250], MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST), mc.cores=numCores)
