@@ -14,6 +14,7 @@ library(stringr)
 library(parallel)
 
 source("process_files.R")
+source("error_message.R")
 
 write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL){
     
@@ -58,7 +59,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     B_type = substr(path_split_B[length(path_split_B)],1,2)
     if (B_type=="BD"){
         print("a BD-file has been given as an input, these are currently not accepted")
-        return(NULL)
+        return(201)
     }
     
     ### create the output file as a copy of the input
@@ -83,7 +84,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     if ( length(id_param_chl)!=1 | length(id_param_bbp)!=1 ){
         print("several profiles of chl or bbp detected")
         nc_close(filenc_out)
-        return(NULL)
+        return(202)
     } 
     
     N_HISTORY=filenc_out$dim[['N_HISTORY']]$len
@@ -247,14 +248,16 @@ ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
 prof_id<-ident[,4] #retrieve all profiles  name as a vector
 
 
+### build list of profiles from float WMO
 profile_WMO = "6901524"
 prof_id_WMO = substr(prof_id, 3, 9)
 profile_list_all = substr(prof_id[which(prof_id_WMO==profile_WMO)], 3, 14)
 
 
-profile_list<-c("6901524_150.","6901524_151.","6901524_152.","6901524_153.","6901524_154.","6901524_155.","6901524_001D")
-profile_actual = profile_list[1]
-profile_actual = "6901524_233."
+#profile_list<-c("6901524_150.","6901524_151.","6901524_152.","6901524_153.","6901524_154.","6901524_155.","6901524_001D")
+#profile_actual = profile_list[1]
+#profile_actual = "6901524_233."
+#profile_actual = "6901524_087."
 
 ### DEEP_EST should be computed once per FLOAT 
 DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 
@@ -263,4 +266,20 @@ DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, i
 
 numCores = detectCores()
 
-M = mcmapply(write_DM_MC, profile_list_all[231:250], MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST), mc.cores=numCores)
+M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST), mc.cores=numCores)
+
+errors = as.numeric(M)
+
+n_profiles = length(profile_list_all)
+n_success = sum(errors==0, na.rm=TRUE) 
+n_errors = sum(is.na(errors))
+n_fails = n_profiles - n_success - n_errors
+
+print(paste(n_profiles,"profiles were found and treated, of which",n_success,"succesfully finished,",n_fails,"were stopped, and",n_errors,"returned an unmanaged error"))
+
+is_error = which(errors!=0 | is.na(errors))
+
+messages = M[is_error]
+is_managed_error = which(!is.na(errors[is_error]))
+messages[is_managed_error] = lapply(messages[is_managed_error], error_message)
+View(messages)

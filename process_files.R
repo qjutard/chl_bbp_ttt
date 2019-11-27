@@ -114,7 +114,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   # Skip if the profile is a descent one (optional)
   if(substr(profile_actual,12,12)=="D") {
     print("Descent Profile")
-    return(NULL)
+    return(101)
   } 
   
   #################
@@ -185,7 +185,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf
     nc_close(profile_C)
     nc_close(profile_B)
-    return(NULL)
+    return(102)
   }
   
   lat<-NA
@@ -199,7 +199,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf
     nc_close(profile_C)
     nc_close(profile_B)
-    return(NULL)
+    return(103)
   }
   
   jd<-NA
@@ -217,7 +217,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf
     nc_close(profile_C)
     nc_close(profile_B)
-    return(NULL)
+    return(104)
   }
   
   # skip the profile if julian date qc is bad
@@ -226,7 +226,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf
     nc_close(profile_C)
     nc_close(profile_B)
-    return(NULL)
+    return(105)
   }
   
   ###################
@@ -393,7 +393,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf
     nc_close(profile_C)
     nc_close(profile_B)
-    return(NULL)
+    return(106)
   }
   
   chl_get<-NA
@@ -426,7 +426,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     #nc_close(profile) #close the netcdf file
     nc_close(profile_C)
     nc_close(profile_B)
-    return(NULL)
+    return(107)
   }
   
   
