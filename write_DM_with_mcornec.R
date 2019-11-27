@@ -89,12 +89,9 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     N_HISTORY=filenc_out$dim[['N_HISTORY']]$len
     i_history=N_HISTORY+1
     
-    date = print(Sys.time(), tz="UTC") #should it instead be a centralized timezone ?
-    date = str_sub(date,1,19)
-    date = unlist(strsplit(date, "-"))
-    date = unlist(strsplit(date, " "))
-    date = unlist(strsplit(date, ":"))
-    DATE = paste(date, collapse="")
+    date_update = Sys.time()
+    
+    DATE = stri_datetime_format(date_update, format="uuuuMMddHHmmss", tz="UTC")
     
     ############################
     ### Write correction from method to BD-file
@@ -123,7 +120,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     scientific_calib_chl = c(scientific_comment_chl, scientific_coefficient_chl, scientific_equation_chl, scientific_date_chl)
     scientific_calib_bbp = c(scientific_comment_bbp, scientific_coefficient_bbp, scientific_equation_bbp, scientific_date_bbp)
-    SCIENTIFIC_CALIB_VARIABLE = paste("SCIENTIFIC_CALIB_",c("COMMENT", "COEFFICIENT", "EQUATION", "DATE"), sep="")
+    SCIENTIFIC_CALIB_VARIABLE = paste("SCIENTIFIC_CALIB_", c("COMMENT", "COEFFICIENT", "EQUATION", "DATE"), sep="")
     
     for (i in seq(1,4)){
         SCIENTIFIC_CALIB_INFO_CHL = str_pad(scientific_calib_chl[i], 256, "right")
@@ -194,7 +191,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     if ( n_good_bbp == 100 ) ncvar_put(filenc_out,"PROFILE_BBP700_QC","A",start=id_prof, count=1)
         
     ############################
-    ### Write other info
+    ### Write other variables
     ############################
     
     # DATA_MODE
@@ -220,7 +217,17 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     comment_dmqc_operator = "PRIMARY | https://orcid.org/16-digit-number | operator name, institution" ### TODO fill
     ncatt_put(filenc_out, varid=0, "comment_dmqc_operator", comment_dmqc_operator)
     
-    #TODO change histoy attribute ?
+    #TODO change history attribute, is it necessary ?
+    history = ncatt_get(filenc_out, varid=0, "history")$value
+    
+    DATE_history_day = stri_datetime_format(date_update, format="uuuu-MM-dd", tz="UTC")
+    DATE_history_hour = stri_datetime_format(date_update, format="HH:mm:ss", tz="UTC")
+    
+    history_last_update = paste(DATE_history_day, "T", DATE_history_hour, "Z", " last update (personal code)", sep="")
+    history_new = paste(unlist(strsplit(history,";"))[1], "; ", history_last_update, sep="")
+    
+    ncatt_put(filenc_out, varid=0, "history", history_new)
+    
     
    
     #nc_close(filenc_in)
@@ -242,4 +249,6 @@ DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, i
 
 #M = write_DM_MC(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST)
 
-M = mcmapply(write_DM_MC, profile_list, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST))
+numCores = detectCores()
+
+M = mcmapply(write_DM_MC, profile_list, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST), mc.cores=numCores)
