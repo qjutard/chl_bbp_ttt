@@ -249,10 +249,11 @@ prof_id<-ident[,4] #retrieve all profiles  name as a vector
 
 
 ### build list of profiles from float WMO
-profile_WMO = "6901524"
+#profile_WMO = "6901524"
+profile_WMO = "6901527"
 prof_id_WMO = substr(prof_id, 3, 9)
 profile_list_all = substr(prof_id[which(prof_id_WMO==profile_WMO)], 3, 14)
-
+profile_actual = profile_list_all[1]
 
 #profile_list<-c("6901524_150.","6901524_151.","6901524_152.","6901524_153.","6901524_154.","6901524_155.","6901524_001D")
 #profile_actual = profile_list[1]
