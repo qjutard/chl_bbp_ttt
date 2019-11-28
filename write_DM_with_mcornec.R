@@ -176,10 +176,11 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         scientific_equation_bbp = "BBP700_ADJUSTED = BBP700"
     }
     
+    ### scientific comment
+    scientific_comment_chl = "CHLA delayed mode adjustment following the work done by M. Cornec in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)"
+    scientific_comment_bbp = "BBP700 delayed mode adjustment following the work done by M. Cornec in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)"
     
-    ### scientific calib information
-    scientific_comment_chl = "sample scientific comment chla" # TODO fill comment
-    scientific_comment_bbp = "sample scientific comment bbp700" # TODO fill comment
+    ### calib date
     scientific_date_chl = DATE
     scientific_date_bbp = DATE
     
