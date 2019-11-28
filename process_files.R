@@ -435,6 +435,8 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   chl_dark<-NA
   chl_dark<-Dark_Fchla_Corr(substr(profile_actual,1,11),chl,dep_chl,MLD,zone,DEEP_EST)
   
+  chl_dark_offset = NA 
+  chl_dark_offset = unique(chl-chl_dark) # QJ : for scientific_calib_*
   
   ############ 3) & 4) NPQ and FACTOR 2 ########################
   # Correct the chla profile from the:
@@ -491,6 +493,8 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   
   #### 2) SPECIAL DRIFT CORRECTION (MANUALLY CALCULATED) #############################
+  
+  diff_bottom = NA
   
   if (substr(profile_actual,1,7)==5904218 & substr(profile_actual,1,11) < 660 & substr(profile_actual,1,11) > 456 ) {
     med_bottom<-NULL
@@ -654,9 +658,21 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   chl_error = pmax( 3 * array(chla_scale, dim(chl_array)), 1.5 * chl_array)
   bbp_error = pmax( 3 * array(bbp_scale, dim(bbp_array)), 0.2 * bbp_array)
   
+  ############################
+  ############ M) GET NPQ RELATED INFO
+  ############################
+  
+  is_npq = NA
+  npq_depth = NA
+  npq_val = NA
+  is_npq = any(flag_NPQ_changed)
+  if (is_npq) {
+      npq_depth = max(dep_chl[which(flag_NPQ_changed)])
+      npq_val = unique(chl_npq[which(flag_NPQ_changed)])
+  }
   
   ############################
-  ############ L) CLOSE THE NETCDF PROFILE
+  ############ M) CLOSE THE NETCDF PROFILE
   ############################
   #nc_close(profile)
   nc_close(profile_C)
@@ -664,7 +680,9 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   return(list("CHLA_ADJUSTED"=chl_array, "BBP700_ADJUSTED"=bbp_array, 
               "CHLA_ADJUSTED_QC"=chl_adjusted_qc, "BBP700_ADJUSTED_QC"=bbp_adjusted_qc,
-              "CHLA_ADJUSTED_ERROR"=chl_error, "BBP700_ADJUSTED_ERROR"=bbp_error))
+              "CHLA_ADJUSTED_ERROR"=chl_error, "BBP700_ADJUSTED_ERROR"=bbp_error,
+              "chl_dark_offset"=chl_dark_offset, "bbp_offset"=diff_bottom,
+              "is_npq"=is_npq, "npq_depth"=npq_depth, "npq_val"=npq_val))
   
 }
 

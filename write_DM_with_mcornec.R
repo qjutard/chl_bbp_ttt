@@ -40,6 +40,11 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     BBP700_ADJUSTED_QC = L$BBP700_ADJUSTED_QC
     CHLA_ADJUSTED_ERROR = L$CHLA_ADJUSTED_ERROR
     BBP700_ADJUSTED_ERROR = L$BBP700_ADJUSTED_ERROR
+    chl_dark_offset = L$chl_dark_offset
+    bbp_offset = L$bbp_offset
+    is_npq = L$is_npq
+    npq_depth = L$npq_depth
+    npq_val = L$npq_val
 
     ############################
     ### Open input and output files
