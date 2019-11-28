@@ -12,6 +12,7 @@ library(oce) #calculate density sigma
 library(MASS)
 library(stringr)
 library(parallel)
+library(stringi)
 
 source("process_files.R")
 source("error_message.R")
@@ -144,13 +145,13 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### TODO answer this and fill history information
     
     #HISTORY_INSTITUTION = rep("XXXX", n_prof)
-    HISTORY_INSTITUTION = "XXXX"
+    HISTORY_INSTITUTION = "VF  "
     ncvar_put(filenc_out, "HISTORY_INSTITUTION", HISTORY_INSTITUTION, start=c(1,id_prof,i_history), count=c(4,1,1))
     
-    HISTORY_STEP = "YYYY"
+    HISTORY_STEP = "ARSQ"
     ncvar_put(filenc_out, "HISTORY_STEP", HISTORY_STEP, start=c(1,id_prof,i_history), count=c(4,1,1))
     
-    HISTORY_SOFTWARE = rep("ZZZZ", n_prof)
+    HISTORY_SOFTWARE = rep("DMMC", n_prof)
     ncvar_put(filenc_out, "HISTORY_SOFTWARE", HISTORY_SOFTWARE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
     HISTORY_SOFTWARE_RELEASE = rep("0000", n_prof)
@@ -159,7 +160,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     HISTORY_DATE = rep(DATE, n_prof)
     ncvar_put(filenc_out, "HISTORY_DATE", HISTORY_DATE, start=c(1,id_prof,i_history), count=c(14,1,1))
     
-    HISTORY_ACTION = rep("AAAA", n_prof)
+    HISTORY_ACTION = rep("CV  ", n_prof)
     ncvar_put(filenc_out, "HISTORY_ACTION", HISTORY_ACTION, start=c(1,id_prof,i_history), count=c(4,1,1))
     
     ############################
@@ -199,7 +200,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ncvar_put(filenc_out, "DATA_MODE", "D", start=c(id_prof), count=c(1))
     
     # DATA_STATE_INDICATOR
-    DATA_STATE_INDICATOR = rep("XX  ", n_prof) #TODO fill info
+    DATA_STATE_INDICATOR = rep("2C  ", n_prof)
     ncvar_put(filenc_out, "DATA_STATE_INDICATOR", DATA_STATE_INDICATOR, start=c(1,1), count=c(4,n_prof))
     
     # PARAMETER_DATA_MODE
@@ -238,35 +239,36 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
 }
 
-
+### Paths and profile definition
 index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
 path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
+#profile_WMO = "6901524"
+profile_WMO = "6901527"
 
+
+### build list of profiles from float WMO
 files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
 ident<-strsplit(files,"/") #separate the different roots of the files paths
 ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
 prof_id<-ident[,4] #retrieve all profiles  name as a vector
-
-
-### build list of profiles from float WMO
-#profile_WMO = "6901524"
-profile_WMO = "6901527"
 prof_id_WMO = substr(prof_id, 3, 9)
 profile_list_all = substr(prof_id[which(prof_id_WMO==profile_WMO)], 3, 14)
 profile_actual = profile_list_all[1]
 
+# Test values
 #profile_list<-c("6901524_150.","6901524_151.","6901524_152.","6901524_153.","6901524_154.","6901524_155.","6901524_001D")
 #profile_actual = profile_list[1]
 #profile_actual = "6901524_233."
 #profile_actual = "6901524_087."
+#profile_actual = "6901527_213."
 
 ### DEEP_EST should be computed once per FLOAT 
 DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 
 
+# Test the func
 #M = write_DM_MC(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST)
 
 numCores = detectCores()
-
 M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST), mc.cores=numCores)
 
 errors = as.numeric(M)

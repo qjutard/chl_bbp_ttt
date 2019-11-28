@@ -441,6 +441,16 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   # - Non Photochemical Quenching: Xing et al., 2018
   # - Factor 2: Roesler et al., 2017
   
+  #Pre-calculate RESO which will cause an error in the chl_npq computation if RESO=0
+  RESO = NA
+  RESO = mean(abs(diff(dep_chl[which(dep_chl<=250)])),na.rm=T) 
+  if (RESO==0 | is.na(RESO)){
+      print("RESO = 0")
+      nc_close(profile_C)
+      nc_close(profile_B)
+      return(108)
+  }
+  
   if ("DOWNWELLING_PAR" %in% names(profile_B$var)==T) { # test if there is a PAR in situ measured
     chl_npq<-NPQ_cor_X12_XB18(chl_dark/2,dep_chl,dep_light,light,MLD)
   } else {
