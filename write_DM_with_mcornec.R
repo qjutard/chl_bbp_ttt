@@ -17,7 +17,7 @@ library(stringi)
 source("process_files.R")
 source("error_message.R")
 
-write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL){
+write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, just_copy=FALSE){
     
     files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
     ident<-strsplit(files,"/") #separate the different roots of the files paths
@@ -78,6 +78,9 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     ### create the output file as a copy of the input
     system2("cp", c(file_B, file_out))
+    if (just_copy) {
+        return(0)
+    }
     
     #filenc_in <- nc_open(file_B, readunlim=FALSE, write=FALSE)
     filenc_out <- nc_open(file_out, readunlim=FALSE, write=TRUE)
@@ -300,7 +303,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
 index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
 path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
 #profile_WMO = "6901524"
-profile_WMO = "6901527"
+profile_WMO = "6901524"
 
 
 ### build list of profiles from float WMO
@@ -318,7 +321,7 @@ profile_actual = profile_list_all[1]
 #profile_actual = "6901524_233."
 #profile_actual = "6901524_087."
 #profile_actual = "6901527_213."
-profile_actual = "6901527_277."
+#profile_actual = "6901527_277."
 
 ### DEEP_EST should be computed once per FLOAT 
 DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 

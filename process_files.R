@@ -661,8 +661,8 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   nc_close(meta_nc) # close meta
   
   ### create error arrays
-  chl_error = pmax( 3 * array(chla_scale, dim(chl_array)), 1.5 * chl_array)
-  bbp_error = pmax( 3 * array(bbp_scale, dim(bbp_array)), 0.2 * bbp_array)
+  chl_error = pmax( 3 * array(chla_scale, dim(chl_array)), 1.5 * abs(chl_array))
+  bbp_error = pmax( 3 * array(bbp_scale, dim(bbp_array)), 0.2 * abs(bbp_array))
   
   ############################
   ############ L) GET NPQ RELATED INFO
