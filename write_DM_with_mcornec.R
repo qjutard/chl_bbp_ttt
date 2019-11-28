@@ -47,15 +47,6 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     is_npq = L$is_npq
     npq_depth = L$npq_depth
     npq_val = L$npq_val
-    
-    if (length(chl_dark_offset)>1){
-        print(error_message(203))
-        return(203)
-    }
-    if (length(npq_val)>1){
-        print(error_message(204))
-        return(204)
-    }
 
     ############################
     ### Open input and output files
@@ -207,7 +198,6 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Write history
     ############################
 
-    #HISTORY_INSTITUTION = rep("XXXX", n_prof)
     HISTORY_INSTITUTION = "VF  "
     ncvar_put(filenc_out, "HISTORY_INSTITUTION", HISTORY_INSTITUTION, start=c(1,id_prof,i_history), count=c(4,1,1))
     
@@ -279,8 +269,12 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Change attributes
     ############################
     
-    comment_dmqc_operator = "PRIMARY | https://orcid.org/16-digit-number | operator name, institution" ### TODO fill
-    ncatt_put(filenc_out, varid=0, "comment_dmqc_operator", comment_dmqc_operator)
+    comment_dmqc_operator1 = "PRIMARY | https://orcid.org/16-digit-number | operator name, institution" ### TODO fill
+    comment_dmqc_operator2 = "CHLA | https://orcid.org/16-digit-number | operator name, institution" ### TODO fill
+    comment_dmqc_operator3 = "BBP700 | https://orcid.org/16-digit-number | operator name, institution" ### TODO fill
+    ncatt_put(filenc_out, varid=0, "comment_dmqc_operator1", comment_dmqc_operator1)
+    ncatt_put(filenc_out, varid=0, "comment_dmqc_operator2", comment_dmqc_operator2)
+    ncatt_put(filenc_out, varid=0, "comment_dmqc_operator3", comment_dmqc_operator3)
     
     #TODO change history attribute, is it necessary ?
     history = ncatt_get(filenc_out, varid=0, "history")$value

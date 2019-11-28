@@ -665,7 +665,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   bbp_error = pmax( 3 * array(bbp_scale, dim(bbp_array)), 0.2 * bbp_array)
   
   ############################
-  ############ M) GET NPQ RELATED INFO
+  ############ L) GET NPQ RELATED INFO
   ############################
   
   is_npq = NA
@@ -674,7 +674,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   is_npq = any(flag_NPQ_changed)
   if (is_npq) {
       npq_depth = max(pres_chl[which(flag_NPQ_changed)])
-      npq_val = unique(chl_npq[which(flag_NPQ_changed)])
+      npq_val = chl_npq[which(flag_NPQ_changed)][1]
   }
   
   ############################
