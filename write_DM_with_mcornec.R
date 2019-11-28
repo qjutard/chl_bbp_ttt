@@ -42,6 +42,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     CHLA_ADJUSTED_ERROR = L$CHLA_ADJUSTED_ERROR
     BBP700_ADJUSTED_ERROR = L$BBP700_ADJUSTED_ERROR
     chl_dark_offset = L$chl_dark_offset
+    chl_dark_min_pres = L$chl_dark_min_pres
     bbp_offset = L$bbp_offset
     is_npq = L$is_npq
     npq_depth = L$npq_depth
@@ -133,25 +134,52 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ############################
     
     ### scientific_coefficient
-    scientific_coefficient_chl_old = ncvar_get(filenc_out,"SCIENTIFIC_CALIB_COEFFICIENT")[id_param_chl]
-    #scientific_coefficient_chl_old = gsub(" ","",scientific_coefficient_chl_old)
-    scientific_coefficient_chl_old = unlist(strsplit(scientific_coefficient_chl_old,","))
-    if ( length(scientific_coefficient_chl_old)!=2 | grep("DARK_CHLA", scientific_coefficient_chl_old)!=1 | grep("SCALE_CHLA", scientific_coefficient_chl_old)!=2 ) {
-        print(error_message(205))
-        nc_close(filenc_out)
-        system2("rm", file_out)
-        return(205)
+    if (!is.na(chl_dark_offset)) {
+        scientific_coefficient_chl = paste("CHLA_OFFSET =", chl_dark_offset)
+    } else {
+        scientific_coefficient_chl = ""
     }
-    #TODO finish coefficient chl, chl_dark_offset prob has something wrong
+    
+    if (!is.na(bbp_offset)) {
+        scientific_coefficient_bbp = paste("BBP700_OFFSET =", bbp_offset)
+    } else {
+        scientific_coefficient_bbp = ""
+    }
+    
+    ### scientific equation
+    if (!is.na(chl_dark_offset)) {
+        scientific_equation_chl = "CHLA_ADJUSTED = (CHLA-CHLA_OFFSET)/2"
+        if (!is.na(chl_dark_min_pres)) {
+            scientific_equation_chl = paste("CHLA_ADJUSTED = 0 for PRES in [", chl_dark_min_pres, ",+inf], ", scientific_equation_chl, sep="")
+        }
+    } else {
+        scientific_equation_chl = "CHLA_ADJUSTED = CHLA/2"
+    }
+    if (is_npq) {
+        scientific_equation_chl = paste("CHLA_ADJUSTED = ", npq_val, " for PRES in [0, ", npq_depth,"], ", scientific_equation_chl, sep="")
+    }
+    if (is_npq | !is.na(chl_dark_min_pres)){
+        scientific_equation_chl = paste(scientific_equation_chl, " otherwise", sep="")
+    }
+    if (is_npq & !is.na(chl_dark_min_pres)){
+        if (npq_depth>chl_dark_min_pres){
+            print(error_message(203))
+            nc_close(filenc_out)
+            system2("rm", file_out)
+            return(203)
+        }
+    }
+    
+    if (!is.na(bbp_offset)){
+        scientific_equation_bbp = "BBP700_ADJUSTED = BBP700-BBP700_OFFSET"
+    } else {
+        scientific_equation_bbp = "BBP700_ADJUSTED = BBP700"
+    }
     
     
     ### scientific calib information
     scientific_comment_chl = "sample scientific comment chla" # TODO fill comment
     scientific_comment_bbp = "sample scientific comment bbp700" # TODO fill comment
-    scientific_coefficient_chl = "sample scientific coefficient chla" # TODO fill coefficient
-    scientific_coefficient_bbp = "sample scientific coefficient bbp700" # TODO fill coefficient
-    scientific_equation_chl = "sample scientific equation chla" # TODO fill equation
-    scientific_equation_bbp = "sample scientific equation bbp700" # TODO fill equation
     scientific_date_chl = DATE
     scientific_date_bbp = DATE
     

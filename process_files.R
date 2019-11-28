@@ -687,7 +687,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   return(list("CHLA_ADJUSTED"=chl_array, "BBP700_ADJUSTED"=bbp_array, 
               "CHLA_ADJUSTED_QC"=chl_adjusted_qc, "BBP700_ADJUSTED_QC"=bbp_adjusted_qc,
               "CHLA_ADJUSTED_ERROR"=chl_error, "BBP700_ADJUSTED_ERROR"=bbp_error,
-              "chl_dark_offset"=chl_dark_offset, "chl_dark_min_pres"=chl_dark_min_pres,"bbp_offset"=diff_bottom,
+              "chl_dark_offset"=chl_dark_offset, "chl_dark_min_pres"=chl_dark_min_pres,"bbp_offset"=-diff_bottom,
               "is_npq"=is_npq, "npq_depth"=npq_depth, "npq_val"=npq_val))
   
 }
