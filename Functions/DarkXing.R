@@ -18,6 +18,8 @@
 DarkXing<-function(dep_chl,chl) {
   
   chl_dark<-chl # set the default output vector
+  offset = NA
+  min_dep = NA
   
   # calculate the mean vertical resolution of measurements in the 500 first meters
   step_res<-NA
@@ -52,8 +54,9 @@ DarkXing<-function(dep_chl,chl) {
     min_dep<-dep_chl_sub[min(which.min(chl_sub))] # indentify the depth where the chla is at its minimum value
     min_chla<-min(chl_sub,na.rm=T) # retrieve the min chl value (dark offset)
     chl_dark<-chl_dark-min_chla # correct the chla profile from the offset
+    offset = min_chla
     
     chl_dark[which(dep_chl>=min_dep)]<-0 # chl profile below the min chl depth is set to 0
   }
-  return(chl_dark)
+  return(list("chl_dark"=chl_dark, "offset"=offset, "min_dep"=min_dep))
 }

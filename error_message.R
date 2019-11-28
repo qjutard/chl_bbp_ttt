@@ -20,6 +20,10 @@ error_message <- function(error_id) {
            
            "201" = "201 : BD file given as input",
            "202" = "202 : Multiple profiles of CHLA/BBP700 in the profile",
+           "203" = "203 : The value computed for CHL_DARK is not unique",
+           "204" = "204 : The CHLA in the computed NPQ zone is not unique",
+           "205" = "205 : Unexpected formatting of SCIENTIFIC_CALIB_COEFFICIENT",
+           "206" = "206 : Constructed file names are not unique",
            
            paste("No message associated to error_id =", error_id))
 }

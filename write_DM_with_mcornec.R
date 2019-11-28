@@ -29,6 +29,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ############################
     ### Get the chla and bbp corrections from the method
     ############################
+    
     L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST), silent=TRUE)
     if (!is.list(L)){
         print("process_file(...) did not end properly")
@@ -45,10 +46,20 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     is_npq = L$is_npq
     npq_depth = L$npq_depth
     npq_val = L$npq_val
+    
+    if (length(chl_dark_offset)>1){
+        print(error_message(203))
+        return(203)
+    }
+    if (length(npq_val)>1){
+        print(error_message(204))
+        return(204)
+    }
 
     ############################
     ### Open input and output files
     ############################
+    
     path_split = unlist( strsplit(files[i],"/") )
     path_to_profile = paste(path_split[1], path_split[2], path_split[3], sep="/")
     
@@ -59,6 +70,11 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
     file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
     file_out = paste(path_to_netcdf, path_to_profile,"/DM_cornec/", filenc_name_out, sep="") 
+    
+    if (length(file_B)!=1 | length(file_out)!=1) {
+        print(error_message(206))
+        return(206)
+    }
     
     ### check whether the existing file is a D file
     path_split_B = unlist( strsplit(file_B, "/") )
@@ -90,6 +106,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     if ( length(id_param_chl)!=1 | length(id_param_bbp)!=1 ){
         print("several profiles of chl or bbp detected")
         nc_close(filenc_out)
+        system2("rm", file_out)
         return(202)
     } 
     
@@ -115,6 +132,19 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Write scientific_calib
     ############################
     
+    ### scientific_coefficient
+    scientific_coefficient_chl_old = ncvar_get(filenc_out,"SCIENTIFIC_CALIB_COEFFICIENT")[id_param_chl]
+    #scientific_coefficient_chl_old = gsub(" ","",scientific_coefficient_chl_old)
+    scientific_coefficient_chl_old = unlist(strsplit(scientific_coefficient_chl_old,","))
+    if ( length(scientific_coefficient_chl_old)!=2 | grep("DARK_CHLA", scientific_coefficient_chl_old)!=1 | grep("SCALE_CHLA", scientific_coefficient_chl_old)!=2 ) {
+        print(error_message(205))
+        nc_close(filenc_out)
+        system2("rm", file_out)
+        return(205)
+    }
+    #TODO finish coefficient chl, chl_dark_offset prob has something wrong
+    
+    
     ### scientific calib information
     scientific_comment_chl = "sample scientific comment chla" # TODO fill comment
     scientific_comment_bbp = "sample scientific comment bbp700" # TODO fill comment
@@ -125,6 +155,8 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     scientific_date_chl = DATE
     scientific_date_bbp = DATE
     
+    
+    ### write on file
     scientific_calib_chl = c(scientific_comment_chl, scientific_coefficient_chl, scientific_equation_chl, scientific_date_chl)
     scientific_calib_bbp = c(scientific_comment_bbp, scientific_coefficient_bbp, scientific_equation_bbp, scientific_date_bbp)
     SCIENTIFIC_CALIB_VARIABLE = paste("SCIENTIFIC_CALIB_", c("COMMENT", "COEFFICIENT", "EQUATION", "DATE"), sep="")
@@ -145,10 +177,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ############################
     ### Write history
     ############################
-    
-    ### Should this info only be written to the CHLA/BBP profile ?
-    ### TODO answer this and fill history information
-    
+
     #HISTORY_INSTITUTION = rep("XXXX", n_prof)
     HISTORY_INSTITUTION = "VF  "
     ncvar_put(filenc_out, "HISTORY_INSTITUTION", HISTORY_INSTITUTION, start=c(1,id_prof,i_history), count=c(4,1,1))
@@ -266,6 +295,7 @@ profile_actual = profile_list_all[1]
 #profile_actual = "6901524_233."
 #profile_actual = "6901524_087."
 #profile_actual = "6901527_213."
+profile_actual = "6901527_277."
 
 ### DEEP_EST should be computed once per FLOAT 
 DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 

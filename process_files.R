@@ -433,10 +433,16 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   ################ 2) DARK OFFSET #######################
   # correct the vertical profile from a deep offset (Dark_Fchla_Corr function)
   chl_dark<-NA
-  chl_dark<-Dark_Fchla_Corr(substr(profile_actual,1,11),chl,dep_chl,MLD,zone,DEEP_EST)
+  list_dark = Dark_Fchla_Corr(substr(profile_actual,1,11),chl,dep_chl,MLD,zone,DEEP_EST)
+  chl_dark<-list_dark$chl_dark
   
   chl_dark_offset = NA 
-  chl_dark_offset = unique(chl-chl_dark) # QJ : for scientific_calib_*
+  chl_dark_min_pres = NA
+  chl_dark_offset = list_dark$offset # QJ : for scientific_calib_*
+  chl_dark_min_pres = list_dark$min_dep 
+  if (!is.na(chl_dark_min_pres)) {
+      chl_dark_min_pres = swPressure(chl_dark_min_pres, lat) # invert swDepth
+  }
   
   ############ 3) & 4) NPQ and FACTOR 2 ########################
   # Correct the chla profile from the:
@@ -667,7 +673,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   npq_val = NA
   is_npq = any(flag_NPQ_changed)
   if (is_npq) {
-      npq_depth = max(dep_chl[which(flag_NPQ_changed)])
+      npq_depth = max(pres_chl[which(flag_NPQ_changed)])
       npq_val = unique(chl_npq[which(flag_NPQ_changed)])
   }
   
@@ -681,7 +687,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   return(list("CHLA_ADJUSTED"=chl_array, "BBP700_ADJUSTED"=bbp_array, 
               "CHLA_ADJUSTED_QC"=chl_adjusted_qc, "BBP700_ADJUSTED_QC"=bbp_adjusted_qc,
               "CHLA_ADJUSTED_ERROR"=chl_error, "BBP700_ADJUSTED_ERROR"=bbp_error,
-              "chl_dark_offset"=chl_dark_offset, "bbp_offset"=diff_bottom,
+              "chl_dark_offset"=chl_dark_offset, "chl_dark_min_pres"=chl_dark_min_pres,"bbp_offset"=diff_bottom,
               "is_npq"=is_npq, "npq_depth"=npq_depth, "npq_val"=npq_val))
   
 }

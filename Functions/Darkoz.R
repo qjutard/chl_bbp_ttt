@@ -18,6 +18,8 @@
 Darkoz<-function(dep_chl,chl,index) {
   
   chl_dark<-chl # set a default chl_dark vector
+  offset = NA
+  min_dep = NA
   
   # calculate the mean vertical resolution of measurements in the 500 first meters
   step_res<-NA
@@ -52,6 +54,7 @@ Darkoz<-function(dep_chl,chl,index) {
     min_dep<-dep_chl_sub1[min(which.min(chl_sub1))] # indentify the depth where the chla is at its minimum value
     min_chla<-min(chl_sub1,na.rm=T) # retrieve the min chl value (dark offset)
     chl_dark<-chl_dark-min_chla # correct the chla profile from the offset
+    offset = min_chla
     
     # Test if second peak of Fchla below the min chla depth (based on a the coefficient of variation of the chla profile below the min chl depth)
     sub_set_chla<-NA
@@ -74,5 +77,5 @@ Darkoz<-function(dep_chl,chl,index) {
     }
     chl_dark[which(dep_chl>=min_dep)]<-0 # chl profile below the min chl depth is set to 0
   }
-  return(chl_dark)
+  return(list("chl_dark"=chl_dark, "offset"=offset, "min_dep"=min_dep))
 }
