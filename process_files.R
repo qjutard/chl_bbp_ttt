@@ -96,10 +96,14 @@ source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the d
 
 #for (profile_actual in profile_list) {
 
-process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, plot_chla=FALSE){ 
+process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, plot_chla=FALSE){ 
  
   print(profile_actual)
-
+    
+  #################
+  ############# A) SET THE ID
+  #################
+    
   files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
   ident<-strsplit(files,"/") #separate the different roots of the files paths
   ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
@@ -110,6 +114,58 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   variables<-strsplit(variables," ") #separate the different available variables of each profile
   lat<-index_ifremer[,3] #retrieve the latitude of all profiles as a vector
   lon<-index_ifremer[,4] #retrieve the longitude of all profiles as a vector
+  prof_date = index_ifremer$V2 #retrieve the date of all profiles as a vector
+  
+  www<-substr(profile_actual,1,11)
+  i <-which(substr(prof_id,3,14)==profile_actual) #identify profile position in the index
+  dac_prof<-dac[i] #identify the dac
+  
+  #################
+  ############# A.1) GREYLIST
+  #################
+  
+  chl_greylist_qc = NA
+  bbp_greylist_qc = NA
+  
+  if (!is.null(index_greylist)) {
+      
+      indices_greylist = which( index_greylist$PLATFORM_CODE==wod[i] & (index_greylist$PARAMETER_NAME=="CHLA" | index_greylist$PARAMETER_NAME=="BBP700") )
+      
+      prof_date_trunc = as.numeric( substr(as.character(prof_date[i]), 1, 8) )
+      
+      for (j in indices_greylist) {
+          
+          is_greylist = FALSE
+          
+          if (is.na(index_greylist$END_DATE[j])) { # exact date
+              if (prof_date_trunc==index_greylist$START_DATE[j]) {
+                  is_greylist = TRUE
+              } 
+          } else { # date interval
+              if (index_greylist$START_DATE[j]<=prof_date_trunc & prof_date_trunc<=index_greylist$END_DATE[j]){
+                  is_greylist = TRUE
+              }
+          }
+          
+          if (is_greylist){
+              if (index_greylist$QUALITY_CODE[j] == 4) {
+                  print(paste("profile on the greylist with QC 4 at index ", j, " with comment : ", index_greylist$COMMENT[j], sep=""))
+                  return(109)
+              } else if (index_greylist$QUALITY_CODE == 3){
+                  if (index_greylist$PARAMETER_NAME[j]=="CHLA") { chl_greylist_qc = "3" }
+                  if (index_greylist$PARAMETER_NAME[j]=="BBP700") { bbp_greylist_qc = "3" }
+              } else {
+                  print(error_message(110))
+                  return(110)
+              }
+          }
+          
+          
+          
+      }
+  }
+  
+  
   
   # Skip if the profile is a descent one (optional)
   if(substr(profile_actual,12,12)=="D") {
@@ -117,13 +173,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     return(101)
   } 
   
-  #################
-  ############# A) SET THE ID
-  #################
   
-  www<-substr(profile_actual,1,11)
-  i <-which(substr(prof_id,3,14)==profile_actual) #identify profile position in the index
-  dac_prof<-dac[i] #identify the dac
   
   #################
   ############# B) DARK TEST FOR DEEP VERTICAL MIXING FURTHER CORRECTION
@@ -615,9 +665,17 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   chl_qc[which( flag_array )] = "5" # write a "5" where the NPQ correction changed a value
   
+  if (!is.na(chl_greylist_qc)){
+      chl_qc[which(chl_qc=="2")] = chl_greylist_qc
+  }
+  
   ### bbp flags
   bbp_qc[which(!is.na(bbp_array))] = "1" # start with a 1 if a value exists
   bbp_qc[which( is.na(bbp_array) & !is.na(bbp_get_array) )] = "4" # write a "4" if the method removed a value
+  
+  if (!is.na(bbp_greylist_qc)){
+      bbp_qc[which(bbp_qc=="1")] = bbp_greylist_qc
+  }
   
   ### convert to string-words
   chl_adjusted_qc = rep(NA, dim(chl_qc)[2])

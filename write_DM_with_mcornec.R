@@ -17,7 +17,7 @@ library(stringi)
 source("process_files.R")
 source("error_message.R")
 
-write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, just_copy=FALSE){
+write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, just_copy=FALSE){
     
     files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
     ident<-strsplit(files,"/") #separate the different roots of the files paths
@@ -30,7 +30,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Get the chla and bbp corrections from the method
     ############################
     
-    L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST), silent=TRUE)
+    L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist), silent=TRUE)
     if (!is.list(L)){
         print("process_file(...) did not end properly")
         return(L)
@@ -301,6 +301,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
 
 ### Paths and profile definition
 index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
+index_greylist<-read.csv("~/Documents/data/ar_greylist.txt", sep = ",")
 path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
 #profile_WMO = "6901524"
 profile_WMO = "6901524"
@@ -318,6 +319,7 @@ profile_actual = profile_list_all[1]
 # Test values
 #profile_list<-c("6901524_150.","6901524_151.","6901524_152.","6901524_153.","6901524_154.","6901524_155.","6901524_001D")
 #profile_actual = profile_list[1]
+#profile_actual = "6901524_150."
 #profile_actual = "6901524_233."
 #profile_actual = "6901524_087."
 #profile_actual = "6901527_213."
@@ -330,7 +332,7 @@ DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, i
 #M = write_DM_MC(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST)
 
 numCores = detectCores()
-M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST), mc.cores=numCores)
+M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist), mc.cores=numCores)
 
 errors = as.numeric(M)
 

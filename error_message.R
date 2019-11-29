@@ -17,6 +17,8 @@ error_message <- function(error_id) {
            "106" = "106 : No CHLA in variables",
            "107" = "107 : Stuck pressure",
            "108" = "108 : Problem with RESO, possibly due to a partially stuck pressure",
+           "109" = "109 : Profile is on the greylist with QC 4, do process_file(profile_actual, ...) for details",
+           "110" = "110 : Profile is on the grylist with an unmanaged QC",
            
            "201" = "201 : BD file given as input",
            "202" = "202 : Multiple profiles of CHLA/BBP700 in the profile",
