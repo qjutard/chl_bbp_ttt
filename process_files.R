@@ -96,7 +96,7 @@ source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the d
 
 #for (profile_actual in profile_list) {
 
-process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, plot_chla=FALSE){ 
+process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, accept_descent=FALSE, plot_chla=FALSE){ 
  
   print(profile_actual)
     
@@ -168,7 +168,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   
   # Skip if the profile is a descent one (optional)
-  if(substr(profile_actual,12,12)=="D") {
+  if (substr(profile_actual,12,12)=="D" & !accept_descent) {
     print("Descent Profile")
     return(101)
   } 

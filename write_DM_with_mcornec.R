@@ -17,7 +17,7 @@ library(stringi)
 source("process_files.R")
 source("error_message.R")
 
-write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, just_copy=FALSE){
+write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, accept_descent=FALSE, just_copy=FALSE){
     
     files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
     ident<-strsplit(files,"/") #separate the different roots of the files paths
@@ -30,7 +30,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Get the chla and bbp corrections from the method
     ############################
     
-    L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist), silent=TRUE)
+    L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, accept_descent=accept_descent), silent=TRUE)
     if (!is.list(L)){
         print("process_file(...) did not end properly")
         return(L)
@@ -332,7 +332,7 @@ DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, i
 #M = write_DM_MC(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST)
 
 numCores = detectCores()
-M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist), mc.cores=numCores)
+M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist, accept_descent=FALSE), mc.cores=numCores)
 
 errors = as.numeric(M)
 
