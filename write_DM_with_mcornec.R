@@ -16,6 +16,7 @@ library(stringi)
 
 source("process_files.R")
 source("error_message.R")
+source("increment_N_CALIB.R")
 
 write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, accept_descent=FALSE, just_copy=FALSE){
     
@@ -60,22 +61,24 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     filenc_name_M = path_split[4]
     filenc_name_B = paste("B?",substring(filenc_name_M, 3),sep="")
     filenc_name_out = paste("BD",substring(filenc_name_M, 3),sep="")
+    filenc_name_out_copy = paste("BD",substring(filenc_name_M, 3, str_length(filenc_name_M)-3),"_copy.nc",sep="")
     
     file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
     file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
     file_out = paste(path_to_netcdf, path_to_profile,"/DM_cornec/", filenc_name_out, sep="") 
+    file_out_copy = paste(path_to_netcdf, path_to_profile,"/DM_cornec/", filenc_name_out_copy, sep="") 
     
-    if (length(file_B)!=1 | length(file_out)!=1) {
+    if (length(file_B)!=1 | length(file_out)!=1 | length(file_out_copy)!=1) {
         print(error_message(206))
         return(206)
     }
     
     if (just_copy) {
-        file_out_copy = unlist(strsplit(file_B,"/"))
-        file_out_copy[length(file_out_copy)+1] = file_out_copy[length(file_out_copy)]
-        file_out_copy[length(file_out_copy)-1] = "DM_cornec"
-        file_out_copy = paste(file_out_copy, collapse = "/")
-        system2("cp", c(file_B, file_out_copy))
+        file_out_just_copy = unlist(strsplit(file_B,"/"))
+        file_out_just_copy[length(file_out_just_copy)+1] = file_out_just_copy[length(file_out_just_copy)]
+        file_out_just_copy[length(file_out_just_copy)-1] = "DM_cornec"
+        file_out_just_copy = paste(file_out_just_copy, collapse = "/")
+        system2("cp", c(file_B, file_out_just_copy))
         return(0)
     }
     
@@ -119,6 +122,21 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     date_update = Sys.time()
     
     DATE = stri_datetime_format(date_update, format="uuuuMMddHHmmss", tz="UTC")
+    
+    ############################
+    ### Increment N_CALIB
+    ############################
+    
+    #TODO : implement calib_increment, depending on SCIENTIFIC_CALIB_DATE, (in this case write BBP on level 1 and CHLA on level 2)
+        
+    calib_increment = FALSE
+    
+    if (calib_increment) {
+        nc_close(filenc_out)
+        increment_N_CALIB(file_out=file_out, file_out_copy=file_out_copy)
+        filenc_out = nc_open(file_out, readunlim=FALSE, write=TRUE)
+    }
+    
     
     ############################
     ### Write correction from method to BD-file
