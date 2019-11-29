@@ -30,26 +30,28 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Get the chla and bbp corrections from the method
     ############################
     
-    L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, accept_descent=accept_descent), silent=TRUE)
-    if (!is.list(L)){
-        print("process_file(...) did not end properly")
-        return(L)
+    if (!just_copy){
+        L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, accept_descent=accept_descent), silent=TRUE)
+        if (!is.list(L)){
+            print("process_file(...) did not end properly")
+            return(L)
+        }
+        CHLA_ADJUSTED = L$CHLA_ADJUSTED
+        BBP700_ADJUSTED = L$BBP700_ADJUSTED
+        CHLA_ADJUSTED_QC = L$CHLA_ADJUSTED_QC
+        BBP700_ADJUSTED_QC = L$BBP700_ADJUSTED_QC
+        CHLA_ADJUSTED_ERROR = L$CHLA_ADJUSTED_ERROR
+        BBP700_ADJUSTED_ERROR = L$BBP700_ADJUSTED_ERROR
+        chl_dark_offset = L$chl_dark_offset
+        chl_dark_min_pres = L$chl_dark_min_pres
+        bbp_offset = L$bbp_offset
+        is_npq = L$is_npq
+        npq_depth = L$npq_depth
+        npq_val = L$npq_val
     }
-    CHLA_ADJUSTED = L$CHLA_ADJUSTED
-    BBP700_ADJUSTED = L$BBP700_ADJUSTED
-    CHLA_ADJUSTED_QC = L$CHLA_ADJUSTED_QC
-    BBP700_ADJUSTED_QC = L$BBP700_ADJUSTED_QC
-    CHLA_ADJUSTED_ERROR = L$CHLA_ADJUSTED_ERROR
-    BBP700_ADJUSTED_ERROR = L$BBP700_ADJUSTED_ERROR
-    chl_dark_offset = L$chl_dark_offset
-    chl_dark_min_pres = L$chl_dark_min_pres
-    bbp_offset = L$bbp_offset
-    is_npq = L$is_npq
-    npq_depth = L$npq_depth
-    npq_val = L$npq_val
 
     ############################
-    ### Open input and output files
+    ### Open output file
     ############################
     
     path_split = unlist( strsplit(files[i],"/") )
@@ -57,7 +59,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     filenc_name_M = path_split[4]
     filenc_name_B = paste("B?",substring(filenc_name_M, 3),sep="")
-    filenc_name_out = paste("BD",substring(filenc_name_M, 3,nchar(filenc_name_M)-3),".nc",sep="")
+    filenc_name_out = paste("BD",substring(filenc_name_M, 3),sep="")
     
     file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
     file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
@@ -66,6 +68,15 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     if (length(file_B)!=1 | length(file_out)!=1) {
         print(error_message(206))
         return(206)
+    }
+    
+    if (just_copy) {
+        file_out_copy = unlist(strsplit(file_B,"/"))
+        file_out_copy[length(file_out_copy)+1] = file_out_copy[length(file_out_copy)]
+        file_out_copy[length(file_out_copy)-1] = "DM_cornec"
+        file_out_copy = paste(file_out_copy, collapse = "/")
+        system2("cp", c(file_B, file_out_copy))
+        return(0)
     }
     
     ### check whether the existing file is a D file
@@ -78,9 +89,6 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     ### create the output file as a copy of the input
     system2("cp", c(file_B, file_out))
-    if (just_copy) {
-        return(0)
-    }
     
     #filenc_in <- nc_open(file_B, readunlim=FALSE, write=FALSE)
     filenc_out <- nc_open(file_out, readunlim=FALSE, write=TRUE)
