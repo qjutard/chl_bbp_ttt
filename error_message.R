@@ -3,6 +3,7 @@
 #
 # 1XX : errors in process_files.R
 # 2XX : errors in write_DM_with_mcornec.R
+# 3XX : errors in increment_N_CALIB.R
 ############################################################
 
 error_message <- function(error_id) {
@@ -23,9 +24,11 @@ error_message <- function(error_id) {
            "201" = "201 : BD file given as input",
            "202" = "202 : Multiple profiles of CHLA/BBP700 in the profile",
            "203" = "203 : NPQ correction and dark correction cross pressure domain", 
-           "204" = "204 : The CHLA in the computed NPQ zone is not unique", ###deprecated, to replace
+           "204" = "204 : Dimensions of imported arrays are not aligned as expected",
            "205" = "205 : Unexpected formatting of SCIENTIFIC_CALIB_COEFFICIENT", ###deprecated, to replace
            "206" = "206 : Constructed file names are not unique",
+           
+           "306" = "306 : Constructed file names are not unique",
            
            paste("No message associated to error_id =", error_id))
 }

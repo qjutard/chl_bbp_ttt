@@ -100,7 +100,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Find some parameter indices and define date
     ############################
     
-    parameters=ncvar_get(filenc_out,"STATION_PARAMETERS")
+    parameters = ncvar_get(filenc_out,"STATION_PARAMETERS")
     
     id_param_chl = grep("CHLA                                                            ",parameters)
     id_param_bbp = grep("BBP700                                                          ",parameters)
@@ -123,13 +123,47 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     DATE = stri_datetime_format(date_update, format="uuuuMMddHHmmss", tz="UTC")
     
+    ### find adequate N_CALIB
+    calib_date = ncvar_get(filenc_out, "SCIENTIFIC_CALIB_DATE")
+    
+    N_PARAM = filenc_out$dim[['N_PARAM']]$len
+    N_CALIB = filenc_out$dim[['N_CALIB']]$len
+    N_PROF = filenc_out$dim[['N_PROF']]$len
+    
+    # check that dimensions are aligned correctly
+    dim_par = dim(parameters)
+    dim_cal = dim(calib_date)
+    if ( dim_par[1]!=N_PARAM | dim_par[2]!=N_PROF | dim_cal[1]!=N_PARAM | dim_cal[2]!=N_CALIB | dim_cal[3]!=N_PROF ){
+        print(error_message(204))
+        return(204)
+    }
+    
+    # get vectors of dates corresponding to each parameter
+    calib_date_chl = calib_date[id_param_chl_arr[1],,id_param_chl_arr[2]]
+    calib_date_bbp = calib_date[id_param_bbp_arr[1],,id_param_bbp_arr[2]]
+    
+    # find the n_calib of the latest calibration
+    last_cal_chl = max(which(calib_date_chl!="              "),0)
+    last_cal_bbp = max(which(calib_date_bbp!="              "),0)
+    
+    # increment n_calib for each parameter
+    new_cal_chl = last_cal_chl + 1
+    new_cal_bbp = last_cal_bbp + 1
+    
+    # position to write calibration in
+    id_calib_chl = c(id_param_chl_arr[1], new_cal_chl, id_param_chl_arr[2])
+    id_calib_bbp = c(id_param_bbp_arr[1], new_cal_bbp, id_param_bbp_arr[2])
+    
+    # should N_CALIB be incremented ?
+    calib_increment = (new_cal_chl>N_CALIB | new_cal_bbp>N_CALIB)
+    
+    
+
     ############################
     ### Increment N_CALIB
     ############################
     
     #TODO : implement calib_increment, depending on SCIENTIFIC_CALIB_DATE, (in this case write BBP on level 1 and CHLA on level 2)
-        
-    calib_increment = FALSE
     
     if (calib_increment) {
         nc_close(filenc_out)
@@ -216,8 +250,8 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         
         scientific_calib_info = ncvar_get(filenc_out, SCIENTIFIC_CALIB_VARIABLE[i])
         
-        scientific_calib_info[id_param_chl] = SCIENTIFIC_CALIB_INFO_CHL
-        scientific_calib_info[id_param_bbp] = SCIENTIFIC_CALIB_INFO_BBP
+        scientific_calib_info[id_calib_chl[1], id_calib_chl[2], id_calib_chl[3]] = SCIENTIFIC_CALIB_INFO_CHL
+        scientific_calib_info[id_calib_bbp[1], id_calib_bbp[2], id_calib_bbp[3]] = SCIENTIFIC_CALIB_INFO_BBP
         
         ncvar_put(filenc_out , SCIENTIFIC_CALIB_VARIABLE[i], scientific_calib_info)
     

@@ -6,8 +6,8 @@
 increment_N_CALIB <- function(file_out, file_out_copy) {
     
     if (length(file_out)!=1 | length(file_out_copy)!=1) {
-        print(error_message(206))
-        return(206)
+        print(error_message(306))
+        return(306)
     }
     
     filenc_out <- nc_open(file_out, readunlim=FALSE, write=TRUE)
@@ -56,9 +56,12 @@ increment_N_CALIB <- function(file_out, file_out_copy) {
         }
         
         # copy variable attributes
-        var_atts = attributes(ncatt_get(filenc_out,varid=old_var[[j]]))$names
-        for (loop_att in var_atts) {
-            ncatt_put(filenc_copy, varid=new_var[[j]], loop_att, ncatt_get(filenc_out, varid=new_var[[j]], attname=loop_att)$value)
+        var_atts_old = attributes(ncatt_get(filenc_out, varid=old_var[[j]]))$names
+        var_atts_new = attributes(ncatt_get(filenc_copy, varid=new_var[[j]]))$names
+        for (loop_att in var_atts_old) {
+            if (!any(var_atts_new==loop_att)) { #if the attribute does not already exist
+                ncatt_put(filenc_copy, varid=new_var[[j]], loop_att, ncatt_get(filenc_out, varid=new_var[[j]], attname=loop_att)$value)
+            }
         }
         
     }
@@ -74,7 +77,7 @@ increment_N_CALIB <- function(file_out, file_out_copy) {
     nc_close(filenc_copy)
     
     # overwrite original file
-    system2("mv", c(file_out, file_out_copy))
+    system2("mv", c(file_out_copy, file_out))
     
     return(0)
 }
