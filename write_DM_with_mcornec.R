@@ -18,7 +18,7 @@ source("process_files.R")
 source("error_message.R")
 source("increment_N_CALIB.R")
 
-write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, accept_descent=FALSE, just_copy=FALSE){
+write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, accept_descent=FALSE, just_copy=FALSE, fill_value=FALSE){
     
     files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
     ident<-strsplit(files,"/") #separate the different roots of the files paths
@@ -31,7 +31,12 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Get the chla and bbp corrections from the method
     ############################
     
-    if (!just_copy){
+    chl_dark_offset = NA
+    bbp_offset = NA
+    chl_dark_min_pres = NA
+    is_npq = FALSE
+    
+    if (!just_copy & !fill_value){
         L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, accept_descent=accept_descent), silent=TRUE)
         if (!is.list(L)){
             print("process_file(...) did not end properly")
@@ -176,12 +181,31 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Write correction from method to BD-file
     ############################
     
-    ncvar_put(filenc_out,"CHLA_ADJUSTED",CHLA_ADJUSTED)
-    ncvar_put(filenc_out,"BBP700_ADJUSTED",BBP700_ADJUSTED)
-    ncvar_put(filenc_out,"CHLA_ADJUSTED_QC",CHLA_ADJUSTED_QC)
-    ncvar_put(filenc_out,"BBP700_ADJUSTED_QC",BBP700_ADJUSTED_QC)
-    ncvar_put(filenc_out,"CHLA_ADJUSTED_ERROR",CHLA_ADJUSTED_ERROR)
-    ncvar_put(filenc_out,"BBP700_ADJUSTED_ERROR",BBP700_ADJUSTED_ERROR)
+    if (!fill_value) { 
+        ncvar_put(filenc_out,"CHLA_ADJUSTED",CHLA_ADJUSTED)
+        ncvar_put(filenc_out,"BBP700_ADJUSTED",BBP700_ADJUSTED)
+        ncvar_put(filenc_out,"CHLA_ADJUSTED_QC",CHLA_ADJUSTED_QC)
+        ncvar_put(filenc_out,"BBP700_ADJUSTED_QC",BBP700_ADJUSTED_QC)
+        ncvar_put(filenc_out,"CHLA_ADJUSTED_ERROR",CHLA_ADJUSTED_ERROR)
+        ncvar_put(filenc_out,"BBP700_ADJUSTED_ERROR",BBP700_ADJUSTED_ERROR)
+    } else {
+        fill_params = c("CHLA_ADJUSTED", "BBP700_ADJUSTED", "CHLA_ADJUSTED_ERROR", "BBP700_ADJUSTED_ERROR")
+        for (fill_name in fill_params) {
+            fill_var = ncvar_get(filenc_out, fill_name)
+            fill_var[,] = NA
+            ncvar_put(filenc_out, fill_name, fill_var)
+        }
+        fill_QC = c("CHLA_ADJUSTED_QC", "BBP700_ADJUSTED_QC")
+        fill_QC_var = c("CHLA", "BBP700")
+        for (i in c(1,2)) {
+            fill_test = ncvar_get(filenc_out, fill_QC_var[i], start=c(1,id_prof)) #get the original profile
+            fill_space = which(is.na(fill_test))
+            fill_test[] = "4"
+            fill_test[fill_space] = " "
+            fill_test = paste(fill_test, collapse="")
+            ncvar_put(filenc_out, fill_QC[i], fill_test, start=c(1,id_prof))
+        }
+    }
     
     ############################
     ### Write scientific_calib
@@ -230,6 +254,11 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         scientific_equation_bbp = "BBP700_ADJUSTED = BBP700"
     }
     
+    if (fill_value) {
+        scientific_equation_chl = "CHLA_ADJUSTED = _FillValue"
+        scientific_equation_bbp = "BBP700_ADJUSTED = _FillValue"
+    }
+    
     ### scientific comment
     scientific_comment_chl = "CHLA delayed mode adjustment following the work done by M. Cornec in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)"
     scientific_comment_bbp = "BBP700 delayed mode adjustment following the work done by M. Cornec in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)"
@@ -267,24 +296,29 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     HISTORY_STEP = "ARSQ"
     ncvar_put(filenc_out, "HISTORY_STEP", HISTORY_STEP, start=c(1,id_prof,i_history), count=c(4,1,1))
     
-    HISTORY_SOFTWARE = rep("DMMC", n_prof)
+    HISTORY_SOFTWARE = "DMMC"
     ncvar_put(filenc_out, "HISTORY_SOFTWARE", HISTORY_SOFTWARE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
-    HISTORY_SOFTWARE_RELEASE = rep("0000", n_prof)
+    HISTORY_SOFTWARE_RELEASE = "0000"
     ncvar_put(filenc_out, "HISTORY_SOFTWARE_RELEASE", HISTORY_SOFTWARE_RELEASE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
-    HISTORY_DATE = rep(DATE, n_prof)
+    HISTORY_DATE = DATE
     ncvar_put(filenc_out, "HISTORY_DATE", HISTORY_DATE, start=c(1,id_prof,i_history), count=c(14,1,1))
     
-    HISTORY_ACTION = rep("CV  ", n_prof)
+    HISTORY_ACTION = "CV  "
     ncvar_put(filenc_out, "HISTORY_ACTION", HISTORY_ACTION, start=c(1,id_prof,i_history), count=c(4,1,1))
     
     ############################
     ### Write profile_QC
     ############################
     
-    chl_QC = unlist(strsplit(CHLA_ADJUSTED_QC[id_prof],""))
-    bbp_QC = unlist(strsplit(BBP700_ADJUSTED_QC[id_prof],""))
+    if (!fill_value) {
+        chl_QC = unlist(strsplit(CHLA_ADJUSTED_QC[id_prof],""))
+        bbp_QC = unlist(strsplit(BBP700_ADJUSTED_QC[id_prof],""))
+    } else {
+        chl_QC = "4"
+        bbp_QC = "4"
+    }
 
     n_QC_chl = sum( chl_QC!=" " )
     n_QC_bbp = sum( bbp_QC!=" " )
@@ -388,8 +422,8 @@ profile_actual = profile_list_all[1]
 ### DEEP_EST should be computed once per FLOAT 
 DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 
 
-# Test the func
-#M = write_DM_MC(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST)
+# Test the function
+#M = write_DM_MC(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, fill_value = TRUE)
 
 numCores = detectCores()
 M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist, accept_descent=FALSE), mc.cores=numCores)
