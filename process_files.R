@@ -510,14 +510,22 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   }
   
   if ("DOWNWELLING_PAR" %in% names(profile_B$var)==T) { # test if there is a PAR in situ measured
-    chl_npq<-NPQ_cor_X12_XB18(chl_dark/2,dep_chl,dep_light,light,MLD)
+    chl_npq_list<-NPQ_cor_X12_XB18(chl_dark/2,dep_chl,dep_light,light,MLD)
   } else {
-    chl_npq<-NPQ_cor_P18(chl_dark/2,dep_chl,MLD)
+    chl_npq_list<-NPQ_cor_P18(chl_dark/2,dep_chl,MLD)
   }
+  print(chl_npq_list)
+  
+  print(chl_dark/2)
+  
+  chl_npq=chl_npq_list$chl_npq
   
   flag_NPQ_changed = NA
-  flag_NPQ_changed = chl_npq!=chl_dark/2 # save the values that were changed by the NPQ correction to later write QC
-  
+  flag_NPQ_changed = rep(FALSE, length(chl_npq))
+  chl_max_npq_depth = chl_npq_list$chl_max_npq_depth
+  if (!is.na(chl_max_npq_depth)) {
+    flag_NPQ_changed[which(dep_chl <= chl_max_npq_depth )] = TRUE # save the values that were changed by the NPQ correction to later write QC
+  }
   ############################
   ############ H) BBP700 RETRIEVAL AND TREATMENT
   ############################

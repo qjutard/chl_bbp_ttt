@@ -26,6 +26,7 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
   
   #Declare variable
   chl_npq<-chl
+  chl_max_npq_depth<-NA
   
   if (length(chl[!is.na(chl)])>5) { # at least 5 no-NA values needed in Fchl profile
     
@@ -77,6 +78,8 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
         chl_npq[which(is.na(chl_npq) & dep_chl >=10)]<-
           chl[which(is.na(chl_npq) & dep_chl >=10)]
         
+        chl_max_npq_depth<-10
+        
       } else
         
       {  #X12 (case for deep mixing and DCM)
@@ -91,7 +94,6 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
         chl_max_npq<-max(chl_filt_res[which(dep_reg_res<=min_depth_npq)], na.rm=T)
         
         #identify the depth related to the max Fchla
-        chl_max_npq_depth<-NA
         chl_max_npq_depth<-dep_reg_res[which(chl_filt_res==chl_max_npq & dep_reg_res<=min_depth_npq)]
         chl_max_npq_depth<-max(chl_max_npq_depth,na.rm=T)
         
@@ -103,6 +105,6 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
     }
     
   }
-  return(chl_npq)
+  return(list("chl_npq"=chl_npq, "chl_max_npq_depth"=chl_max_npq_depth))
 }
 

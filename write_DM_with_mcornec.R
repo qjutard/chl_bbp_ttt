@@ -297,7 +297,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     HISTORY_SOFTWARE = "DMMC"
     ncvar_put(filenc_out, "HISTORY_SOFTWARE", HISTORY_SOFTWARE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
-    HISTORY_SOFTWARE_RELEASE = "0000"
+    HISTORY_SOFTWARE_RELEASE = "1.00"
     ncvar_put(filenc_out, "HISTORY_SOFTWARE_RELEASE", HISTORY_SOFTWARE_RELEASE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
     HISTORY_DATE = DATE

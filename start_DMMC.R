@@ -48,6 +48,7 @@ if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
     write.table(DEEP_EST, "DEEP_EST.t")
 } else {
     DEEP_EST = read.table(DEEP_EST_table)
+    ### TODO deal with empty table
 }
 
 ### Compute and write delayed modes

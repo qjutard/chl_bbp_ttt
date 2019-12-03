@@ -21,6 +21,8 @@ NPQ_cor_P18 <- function (chl,dep_chl,MLD) {
   
   MLD<-0.9*MLD # set the MLD value to 90% of its depth
   
+  chl_max_npq_depth<-NA
+  
   if (length(chl[!is.na(chl)])>5) { # at least 5 no-NA values needed in Fchl profile
     
     #create interpolated chl profile at a resolution of 1m
@@ -69,7 +71,6 @@ NPQ_cor_P18 <- function (chl,dep_chl,MLD) {
       chl_max_npq<-max(chl_filt_res[which(dep_reg_res<=min_depth_npq)], na.rm=T)
       
       #identify the depth related to the max Fchla
-      chl_max_npq_depth<-NA
       chl_max_npq_depth<-dep_reg_res[which(chl_filt_res==chl_max_npq & dep_reg_res<=min_depth_npq)]
       chl_max_npq_depth<-max(chl_max_npq_depth,na.rm=T)
       
@@ -79,5 +80,5 @@ NPQ_cor_P18 <- function (chl,dep_chl,MLD) {
       }
     }
   }
-  return(chl_npq)
+  return(list("chl_npq"=chl_npq, "chl_max_npq_depth"=chl_max_npq_depth))
 }
