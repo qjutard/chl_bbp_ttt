@@ -5,7 +5,7 @@
 # The script is written as a function to ideally loop over the profiles of a float or parallelize eg with mcmapply
 #########################
 
-rm(list = ls())
+#rm(list = ls())
 
 library(ncdf4) #deal with netcdf format files
 library(oce) #calculate density sigma
@@ -394,21 +394,21 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
 }
 
 ### Paths and profile definition
-index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
-index_greylist<-read.csv("~/Documents/data/ar_greylist.txt", sep = ",")
-path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
+#index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
+#index_greylist<-read.csv("~/Documents/data/ar_greylist.txt", sep = ",")
+#path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
 #profile_WMO = "6901524"
-profile_WMO = "6901524"
+#profile_WMO = "6901524"
 
 
 ### build list of profiles from float WMO
-files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
-ident<-strsplit(files,"/") #separate the different roots of the files paths
-ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
-prof_id<-ident[,4] #retrieve all profiles  name as a vector
-prof_id_WMO = substr(prof_id, 3, 9)
-profile_list_all = substr(prof_id[which(prof_id_WMO==profile_WMO)], 3, 14)
-profile_actual = profile_list_all[1]
+#files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
+#ident<-strsplit(files,"/") #separate the different roots of the files paths
+#ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
+#prof_id<-ident[,4] #retrieve all profiles  name as a vector
+#prof_id_WMO = substr(prof_id, 3, 9)
+#profile_list_all = substr(prof_id[which(prof_id_WMO==profile_WMO)], 3, 14)
+#profile_actual = profile_list_all[1]
 
 # Test values
 #profile_list<-c("6901524_150.","6901524_151.","6901524_152.","6901524_153.","6901524_154.","6901524_155.","6901524_001D")
@@ -420,26 +420,26 @@ profile_actual = profile_list_all[1]
 #profile_actual = "6901527_277."
 
 ### DEEP_EST should be computed once per FLOAT 
-DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 
+#DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 
 
 # Test the function
 #M = write_DM_MC(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, fill_value = TRUE)
 
-numCores = detectCores()
-M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist, accept_descent=FALSE), mc.cores=numCores)
+#numCores = detectCores()
+#M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist, accept_descent=FALSE), mc.cores=numCores)
 
-errors = as.numeric(M)
+#errors = as.numeric(M)
 
-n_profiles = length(profile_list_all)
-n_success = sum(errors==0, na.rm=TRUE) 
-n_errors = sum(is.na(errors))
-n_fails = n_profiles - n_success - n_errors
+#n_profiles = length(profile_list_all)
+#n_success = sum(errors==0, na.rm=TRUE) 
+#n_errors = sum(is.na(errors))
+#n_fails = n_profiles - n_success - n_errors
 
-print(paste(n_profiles,"profiles were found and treated, of which",n_success,"succesfully finished,",n_fails,"were stopped, and",n_errors,"returned an unmanaged error"))
+#print(paste(n_profiles,"profiles were found and treated, of which",n_success,"succesfully finished,",n_fails,"were stopped, and",n_errors,"returned an unmanaged error"))
 
-is_error = which(errors!=0 | is.na(errors))
+#is_error = which(errors!=0 | is.na(errors))
 
-messages = M[is_error]
-is_managed_error = which(!is.na(errors[is_error]))
-messages[is_managed_error] = lapply(messages[is_managed_error], error_message)
-View(messages)
+#messages = M[is_error]
+#is_managed_error = which(!is.na(errors[is_error]))
+#messages[is_managed_error] = lapply(messages[is_managed_error], error_message)
+#View(messages)
