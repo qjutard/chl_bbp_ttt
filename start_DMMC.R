@@ -22,9 +22,9 @@ if (!xor(profile_WMO=="NA", List=="NA")) {
 }
 
 ### import pathways
-source("pathways.R")
+source("~/Documents/cornec_chla_qc/chl_bbp_ttt/pathways.R")
 ### Source the DM function and subfunctions
-source("write_DM_with_mcornec.R")
+source("~/Documents/cornec_chla_qc/chl_bbp_ttt/write_DM_with_mcornec.R")
 
 ### import tables
 index_ifremer<-read.table(path_to_index_ifremer, skip=9, sep = ",")
@@ -38,19 +38,16 @@ if (profile_WMO!="NA") {
     prof_id<-ident[,4] #retrieve all profiles  name as a vector
     prof_id_WMO = substr(prof_id, 3, 9)
     profile_list_all = substr(prof_id[which(prof_id_WMO==profile_WMO)], 3, 14)
-    profile_actual = profile_list_all[1]
 } else {
-    ### TODO import profile_list from file
-    print("-L option not currently supported")
-    stop()
+    profile_list_all = read.table(List, colClasses="character")$V1
 }
 
 if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
-    DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 
+    profile_actual = profile_list_all[1]
+    DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
+    write.table(DEEP_EST, "DEEP_EST.t")
 } else {
-    ### TODO import DEEP_EST from file
-    print("-D option not currently supported")
-    stop()
+    DEEP_EST = read.table(DEEP_EST_table)
 }
 
 ### Compute and write delayed modes
@@ -73,3 +70,4 @@ messages = M[is_error]
 is_managed_error = which(!is.na(errors[is_error]))
 messages[is_managed_error] = lapply(messages[is_managed_error], error_message)
 
+write.table(unlist(messages), "list_errors.t", col.names = FALSE)

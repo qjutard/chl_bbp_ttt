@@ -184,12 +184,12 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   #dark_new<-NA
   #dark_new<-substr(profile_actual,1,7) # attribute the actual wmo to the dark marker
   #if (dark_new!=dark_old) { #test if the profile is from a new WMO or not
-  if (is.null(DEEP_EST)){ ### if DEEP_EST is not given as argument, compute it (if several profiles from the same float will be used, it should be calculated once and given as argument)
-    print("dark TS calc")
+  #if (is.null(DEEP_EST)){ ### if DEEP_EST is not given as argument, compute it (if several profiles from the same float will be used, it should be calculated once and given as argument)
+    #print("dark TS calc")
     #DEEP_EST<-NULL
-    DEEP_EST<-Dark_MLD_table_coriolis(substr(profile_actual,1,7), # calculation of the dark time serie (Dark_MLD_table_coriolis function)
-                                      path_to_netcdf,index_ifremer)
-  }
+    #DEEP_EST<-Dark_MLD_table_coriolis(substr(profile_actual,1,7), # calculation of the dark time serie (Dark_MLD_table_coriolis function)
+    #                                  path_to_netcdf,index_ifremer)
+  #}
   #dark_old<-dark_new #attribute the actual wmo to the dark marker for the next profile
   
   #################

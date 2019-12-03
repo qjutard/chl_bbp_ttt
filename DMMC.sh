@@ -62,4 +62,4 @@ done
 #echo ${copy}
 #echo ${WMO}
 
-Rscript start_DMMC.R $WMO $List $DEEP $copy $fill $descent
+Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent

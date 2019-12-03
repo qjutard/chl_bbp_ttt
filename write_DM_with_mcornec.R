@@ -14,9 +14,9 @@ library(stringr)
 library(parallel)
 library(stringi)
 
-source("process_files.R")
-source("error_message.R")
-source("increment_N_CALIB.R")
+source("~/Documents/cornec_chla_qc/chl_bbp_ttt/process_files.R")
+source("~/Documents/cornec_chla_qc/chl_bbp_ttt/error_message.R")
+source("~/Documents/cornec_chla_qc/chl_bbp_ttt/increment_N_CALIB.R")
 
 write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, accept_descent=FALSE, just_copy=FALSE, fill_value=FALSE){
     
@@ -70,8 +70,8 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
     file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
-    file_out = paste(path_to_netcdf, path_to_profile,"/DM_cornec/", filenc_name_out, sep="") 
-    file_out_copy = paste(path_to_netcdf, path_to_profile,"/DM_cornec/", filenc_name_out_copy, sep="") 
+    file_out = paste(path_to_netcdf, path_to_profile,"/DMMC/DMMC_profiles/", filenc_name_out, sep="") 
+    file_out_copy = paste(path_to_netcdf, path_to_profile,"/DMMC/DMMC_profiles/", filenc_name_out_copy, sep="") 
     
     if (length(file_B)!=1 | length(file_out)!=1 | length(file_out_copy)!=1) {
         print(error_message(206))
@@ -81,7 +81,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     if (just_copy) {
         file_out_just_copy = unlist(strsplit(file_B,"/"))
         file_out_just_copy[length(file_out_just_copy)+1] = file_out_just_copy[length(file_out_just_copy)]
-        file_out_just_copy[length(file_out_just_copy)-1] = "DM_cornec"
+        file_out_just_copy[length(file_out_just_copy)-1] = "DMMC/DMMC_profiles"
         file_out_just_copy = paste(file_out_just_copy, collapse = "/")
         system2("cp", c(file_B, file_out_just_copy))
         return(0)
@@ -167,8 +167,6 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ############################
     ### Increment N_CALIB
     ############################
-    
-    #TODO : implement calib_increment, depending on SCIENTIFIC_CALIB_DATE, (in this case write BBP on level 1 and CHLA on level 2)
     
     if (calib_increment) {
         nc_close(filenc_out)
@@ -366,23 +364,23 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Change attributes
     ############################
     
-    comment_dmqc_operator1 = "PRIMARY | https://orcid.org/16-digit-number | operator name, institution" ### TODO fill
-    comment_dmqc_operator2 = "CHLA | https://orcid.org/16-digit-number | operator name, institution" ### TODO fill
-    comment_dmqc_operator3 = "BBP700 | https://orcid.org/16-digit-number | operator name, institution" ### TODO fill
+    comment_dmqc_operator1 = "PRIMARY | https://orcid.org/0000-0001-9992-5334 1 | Raphaelle Sauzede, CNRS" ### TODO fill
+    comment_dmqc_operator2 = "CHLA | https://orcid.org/0000-0002-1230-164X 2 | Catherine Schmechtig, CNRS" ### TODO fill
+    comment_dmqc_operator3 = "BBP700 | https://orcid.org/0000-0002-1230-164X 3 | Catherine Schmechtig, CNRS" ### TODO fill
     ncatt_put(filenc_out, varid=0, "comment_dmqc_operator1", comment_dmqc_operator1)
     ncatt_put(filenc_out, varid=0, "comment_dmqc_operator2", comment_dmqc_operator2)
     ncatt_put(filenc_out, varid=0, "comment_dmqc_operator3", comment_dmqc_operator3)
     
-    #TODO change history attribute, is it necessary ?
-    history = ncatt_get(filenc_out, varid=0, "history")$value
+    # change history attribute, is it necessary ?
+    #history = ncatt_get(filenc_out, varid=0, "history")$value
     
-    DATE_history_day = stri_datetime_format(date_update, format="uuuu-MM-dd", tz="UTC")
-    DATE_history_hour = stri_datetime_format(date_update, format="HH:mm:ss", tz="UTC")
+    #DATE_history_day = stri_datetime_format(date_update, format="uuuu-MM-dd", tz="UTC")
+    #DATE_history_hour = stri_datetime_format(date_update, format="HH:mm:ss", tz="UTC")
     
-    history_last_update = paste(DATE_history_day, "T", DATE_history_hour, "Z", " last update (personal code)", sep="")
-    history_new = paste(unlist(strsplit(history,";"))[1], "; ", history_last_update, sep="")
+    #history_last_update = paste(DATE_history_day, "T", DATE_history_hour, "Z", " last update (personal code)", sep="")
+    #history_new = paste(unlist(strsplit(history,";"))[1], "; ", history_last_update, sep="")
     
-    ncatt_put(filenc_out, varid=0, "history", history_new)
+    #ncatt_put(filenc_out, varid=0, "history", history_new)
     
     
    
