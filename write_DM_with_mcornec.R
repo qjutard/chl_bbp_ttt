@@ -173,7 +173,10 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         nc_close(filenc_out)
         
         inc_ret = increment_N_CALIB(file_out=file_out, file_out_copy=file_out_copy)
-        if (inc_ret!=0) { return(inc_ret) }
+        if (inc_ret!=0) { 
+            system2("rm", file_out)
+            return(inc_ret) 
+        }
         
         filenc_out = nc_open(file_out, readunlim=FALSE, write=TRUE)
         
@@ -220,28 +223,24 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     ### scientific_coefficient
     if (!is.na(chl_dark_offset)) {
-        scientific_coefficient_chl = paste("CHLA_OFFSET =", chl_dark_offset)
+        scientific_coefficient_chl = paste("CHLA_OFFSET =", round(chl_dark_offset,4))
     } else {
-        scientific_coefficient_chl = ""
+        scientific_coefficient_chl = paste("CHLA_OFFSET =", 0)
     }
     
     if (!is.na(bbp_offset)) {
-        scientific_coefficient_bbp = paste("BBP700_OFFSET =", bbp_offset)
+        scientific_coefficient_bbp = paste("BBP700_OFFSET =", round(bbp_offset,4))
     } else {
         scientific_coefficient_bbp = ""
     }
     
     ### scientific equation
-    if (!is.na(chl_dark_offset)) {
-        scientific_equation_chl = "CHLA_ADJUSTED = (CHLA-CHLA_OFFSET)/2"
-        if (!is.na(chl_dark_min_pres)) {
-            scientific_equation_chl = paste("CHLA_ADJUSTED = 0 for PRES in [", chl_dark_min_pres, ",+inf], ", scientific_equation_chl, sep="")
-        }
-    } else {
-        scientific_equation_chl = "CHLA_ADJUSTED = CHLA/2"
+    scientific_equation_chl = "CHLA_ADJUSTED = (CHLA-CHLA_OFFSET)/2"
+    if (!is.na(chl_dark_min_pres)) {
+        scientific_equation_chl = paste("CHLA_ADJUSTED = 0 for PRES in [", round(chl_dark_min_pres,4), ",+inf], ", scientific_equation_chl, sep="")
     }
     if (is_npq) {
-        scientific_equation_chl = paste("CHLA_ADJUSTED = ", npq_val, " for PRES in [0, ", npq_depth,"], ", scientific_equation_chl, sep="")
+        scientific_equation_chl = paste("CHLA_ADJUSTED = ", round(npq_val,4), " for PRES in [0, ", round(npq_depth,4),"], ", scientific_equation_chl, sep="")
     }
     if (is_npq | !is.na(chl_dark_min_pres)){
         scientific_equation_chl = paste(scientific_equation_chl, " otherwise", sep="")
@@ -258,7 +257,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     if (!is.na(bbp_offset)){
         scientific_equation_bbp = "BBP700_ADJUSTED = BBP700-BBP700_OFFSET"
     } else {
-        scientific_equation_bbp = "BBP700_ADJUSTED = BBP700"
+        scientific_equation_bbp = "BBP700_ADJUSTED = BBP700, no adjustment needed"
     }
     
     if (fill_value) {
