@@ -18,7 +18,8 @@ source("~/Documents/cornec_chla_qc/chl_bbp_ttt/process_files.R")
 source("~/Documents/cornec_chla_qc/chl_bbp_ttt/error_message.R")
 source("~/Documents/cornec_chla_qc/chl_bbp_ttt/increment_N_CALIB.R")
 
-write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, accept_descent=FALSE, just_copy=FALSE, fill_value=FALSE){
+write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
+                        accept_descent=FALSE, just_copy=FALSE, fill_value=FALSE, accept_QC3=FALSE){
     
     files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
     ident<-strsplit(files,"/") #separate the different roots of the files paths
@@ -170,8 +171,16 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     if (calib_increment) {
         nc_close(filenc_out)
-        increment_N_CALIB(file_out=file_out, file_out_copy=file_out_copy)
+        
+        inc_ret = increment_N_CALIB(file_out=file_out, file_out_copy=file_out_copy)
+        if (inc_ret!=0) { return(inc_ret) }
+        
         filenc_out = nc_open(file_out, readunlim=FALSE, write=TRUE)
+        
+        # Write the new level of PARAMETER
+        ncvar_put(filenc_out, "PARAMETER","CHLA                                                            ", start=c(1, id_calib_chl), count=c(64,1,1,1))
+        ncvar_put(filenc_out, "PARAMETER","BBP700                                                          ", start=c(1, id_calib_bbp), count=c(64,1,1,1))
+        
     }
     
     

@@ -14,6 +14,7 @@ DEEP_EST_table = uf[3]
 just_copy = as.logical(uf[4])
 fill_value = as.logical(uf[5])
 accept_descent = as.logical(uf[6])
+accept_QC3 = as.logical(uf[7])
 
 ### Check that exactly one of WMO or List is given
 if (!xor(profile_WMO=="NA", List=="NA")) {
@@ -54,7 +55,8 @@ if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
 ### Compute and write delayed modes
 numCores = detectCores()
 M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist, 
-                                                          accept_descent=accept_descent, just_copy=just_copy, fill_value=fill_value), mc.cores=numCores)
+                                                          accept_descent=accept_descent, just_copy=just_copy, fill_value=fill_value, 
+                                                          accept_QC3=accept_QC3), mc.cores=numCores)
 
 ### assess error messages
 errors = as.numeric(M)

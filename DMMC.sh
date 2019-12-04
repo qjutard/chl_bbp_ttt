@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() { 
-	echo "Usage: $0 -W <WMO_number> | -L <profile_list> [-D <DEEP_EST>] [-cdfh]
+	echo "Usage: $0 -W <WMO_number> | -L <profile_list> [-D <DEEP_EST>] [-cdfhq]
 Do '$0 -h' for help" 1>&2
 	exit 1 
 }
@@ -12,7 +12,7 @@ helprint() {
 DMMC does Delayed mode computing and writing following the work done by M. Cornec 
 in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)
 
-Usage: $0 -W <WMO_number> | -L <profile_list> [-D <DEEP_EST>] [-cdfh]
+Usage: $0 -W <WMO_number> | -L <profile_list> [-D <DEEP_EST>] [-cdfhq]
 
 ### Options
 
@@ -29,6 +29,7 @@ Usage: $0 -W <WMO_number> | -L <profile_list> [-D <DEEP_EST>] [-cdfh]
 [-d] : Accept descent profile
 [-f] : Fill the delayed mode profiles with fill values and bad QC
 [-h] : help
+[-q] : Accept profiles on the greylist with QC='3'
 
 #########################################################################################
 " 1>&2
@@ -41,8 +42,9 @@ DEEP=NA
 copy=FALSE
 fill=FALSE
 descent=FALSE
+qc3=FALSE
 
-while getopts W:L:D:cfdh option
+while getopts W:L:D:cfdqh option
 do
 case "${option}"
 in
@@ -52,6 +54,7 @@ D) DEEP=${OPTARG};;
 c) copy=TRUE;;
 f) fill=TRUE;;
 d) descent=TRUE;;
+q) qc3=TRUE;;
 h) helprint;;
 *) usage;;
 esac
@@ -62,4 +65,4 @@ done
 #echo ${copy}
 #echo ${WMO}
 
-Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent
+Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3

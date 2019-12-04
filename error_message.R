@@ -10,7 +10,7 @@ error_message <- function(error_id) {
     switch(toString(error_id), 
            "0" = "Success",
            
-           "101" = "101 : Descent profile", 
+           "101" = "101 : Descent profile, use -d to override", 
            "102" = "102 : Bad position (QC = 3 or 4)",
            "103" = "103 : No geolocalisation (lat or lon missing)",
            "104" = "104 : Date is missing",
@@ -19,7 +19,8 @@ error_message <- function(error_id) {
            "107" = "107 : Stuck pressure",
            "108" = "108 : Problem with RESO, possibly due to a partially stuck pressure",
            "109" = "109 : Profile is on the greylist with QC 4, do process_file(profile_actual, ...) for details",
-           "110" = "110 : Profile is on the grylist with an unmanaged QC",
+           "110" = "110 : Profile is on the greylist with an unmanaged QC",
+           "111" = "111 : Profile is on the greylist with QC 3, use -q to override",
            
            "201" = "201 : BD file given as input",
            "202" = "202 : Multiple profiles of CHLA/BBP700 in the profile",

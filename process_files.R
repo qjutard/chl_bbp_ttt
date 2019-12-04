@@ -96,7 +96,8 @@ source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the d
 
 #for (profile_actual in profile_list) {
 
-process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, accept_descent=FALSE, plot_chla=FALSE){ 
+process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
+                         accept_descent=FALSE, accept_QC3=FALSE, plot_chla=FALSE){ 
  
   print(profile_actual)
     
@@ -151,9 +152,16 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
               if (index_greylist$QUALITY_CODE[j] == 4) {
                   print(paste("profile on the greylist with QC 4 at index ", j, " with comment : ", index_greylist$COMMENT[j], sep=""))
                   return(109)
-              } else if (index_greylist$QUALITY_CODE == 3){
+              } else if (index_greylist$QUALITY_CODE == 3) {
+                  
+                  if (!accept_QC3) {
+                      print(error_message(111))
+                      return(111)
+                  }
+                  
                   if (index_greylist$PARAMETER_NAME[j]=="CHLA") { chl_greylist_qc = "3" }
                   if (index_greylist$PARAMETER_NAME[j]=="BBP700") { bbp_greylist_qc = "3" }
+                  
               } else {
                   print(error_message(110))
                   return(110)
@@ -514,9 +522,6 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   } else {
     chl_npq_list<-NPQ_cor_P18(chl_dark/2,dep_chl,MLD)
   }
-  print(chl_npq_list)
-  
-  print(chl_dark/2)
   
   chl_npq=chl_npq_list$chl_npq
   
