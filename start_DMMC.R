@@ -15,10 +15,15 @@ just_copy = as.logical(uf[4])
 fill_value = as.logical(uf[5])
 accept_descent = as.logical(uf[6])
 accept_QC3 = as.logical(uf[7])
+Profile = uf[8]
 
-### Check that exactly one of WMO or List is given
-if (!xor(profile_WMO=="NA", List=="NA")) {
-	print("Please give exactly one of 'WMO' (-W) or 'List' (-L) as argument")
+### Check that exactly one of WMO, List, or Profile is given
+exists_WMO = as.numeric(profile_WMO!="NA")
+exists_List = as.numeric(List!="NA")
+exists_Profile = as.numeric(Profile!="NA")
+
+if ( (exists_WMO + exists_List + exists_Profile)!=1 ) {
+	print("Please give exactly one of 'WMO' (-W), 'List' (-L), or 'Profile' (-P) as argument")
 	stop()
 }
 
@@ -39,8 +44,10 @@ if (profile_WMO!="NA") {
     prof_id<-ident[,4] #retrieve all profiles  name as a vector
     prof_id_WMO = substr(prof_id, 3, 9)
     profile_list_all = substr(prof_id[which(prof_id_WMO==profile_WMO)], 3, 14)
-} else {
+} else if (List!="NA") {
     profile_list_all = read.table(List, colClasses="character")$V1
+} else {
+    profile_list_all = c(Profile)
 }
 
 if (DEEP_EST_table=="NA") { # calculate deep est if it is not given

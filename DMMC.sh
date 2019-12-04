@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() { 
-	echo "Usage: $0 -W <WMO_number> | -L <profile_list> [-D <DEEP_EST>] [-cdfhq]
+	echo "Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-cdfhq]
 Do '$0 -h' for help" 1>&2
 	exit 1 
 }
@@ -12,7 +12,7 @@ helprint() {
 DMMC does Delayed mode computing and writing following the work done by M. Cornec 
 in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)
 
-Usage: $0 -W <WMO_number> | -L <profile_list> [-D <DEEP_EST>] [-cdfhq]
+Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-cdfhq]
 
 ### Options
 
@@ -22,6 +22,8 @@ Usage: $0 -W <WMO_number> | -L <profile_list> [-D <DEEP_EST>] [-cdfhq]
                     with the format 'XXXXXXX_YYYZ' where XXXXXXX is the WMO number,
                     YYY is the profile number, ans Z is one of '.' or 'D' depending on
                     whether the profile is ascending or descending
+-P <profile_name> : Do the delayed mode on the profile <profile_name> with the same
+                    format as described in -L
 [-D <DEEP_EST>] : Use an already existing DEEP_EST table. This table can take some time
                   to be computed so if DMMC has already been used on this float it is
                   best practice to reuse the DEEP_EST table that has been created
@@ -43,8 +45,9 @@ copy=FALSE
 fill=FALSE
 descent=FALSE
 qc3=FALSE
+Profile=NA
 
-while getopts W:L:D:cfdqh option
+while getopts W:L:D:cfdqP:h option
 do
 case "${option}"
 in
@@ -55,6 +58,7 @@ c) copy=TRUE;;
 f) fill=TRUE;;
 d) descent=TRUE;;
 q) qc3=TRUE;;
+P) Profile=${OPTARG};;
 h) helprint;;
 *) usage;;
 esac
@@ -65,4 +69,4 @@ done
 #echo ${copy}
 #echo ${WMO}
 
-Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3
+Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile
