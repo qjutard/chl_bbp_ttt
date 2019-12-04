@@ -527,10 +527,10 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   flag_NPQ_changed = NA
   flag_NPQ_changed = rep(FALSE, length(chl_npq))
-  chl_max_npq_depth = chl_npq_list$chl_max_npq_depth
-  if (!is.na(chl_max_npq_depth)) {
-    flag_NPQ_changed[which(dep_chl <= chl_max_npq_depth )] = TRUE # save the values that were changed by the NPQ correction to later write QC
-  }
+  which_is_npq_changed = chl_npq_list$which_is_npq_changed
+  flag_NPQ_changed[which_is_npq_changed] = TRUE # save the values that were changed by the NPQ correction to later write QC
+  
+  
   ############################
   ############ H) BBP700 RETRIEVAL AND TREATMENT
   ############################

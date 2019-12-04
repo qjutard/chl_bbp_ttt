@@ -55,8 +55,10 @@ if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
     DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
     write.table(DEEP_EST, "DEEP_EST.t")
 } else {
-    DEEP_EST = read.table(DEEP_EST_table)
-    ### TODO deal with empty table
+    DEEP_EST = try(read.table(DEEP_EST_table), silent = TRUE)
+    if (inherits(DEEP_EST, "try-error")) {
+        DEEP_EST = NULL
+    }
 }
 
 ### Compute and write delayed modes

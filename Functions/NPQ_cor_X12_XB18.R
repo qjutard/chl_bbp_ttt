@@ -27,6 +27,7 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
   #Declare variable
   chl_npq<-chl
   chl_max_npq_depth<-NA
+  which_is_npq_changed = NA
   
   if (length(chl[!is.na(chl)])>5) { # at least 5 no-NA values needed in Fchl profile
     
@@ -70,7 +71,7 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
         
         #04/02  Modifiy xb to put values where light is na
         #04/02  Modifiy xb to put values where light is na
-        chl_npq<-chl/((r+(1-r))/(1+(light_interp/iPARmid)^e))
+        chl_npq<-chl/(r+(1-r)/(1+(light_interp/iPARmid)^e))
         
         chl_npq[which(dep_chl<10)]<-
           chl_npq[which(dep_chl==min(dep_chl[which(dep_chl >= 10)], na.rm=T))]
@@ -79,6 +80,7 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
           chl[which(is.na(chl_npq) & dep_chl >=10)]
         
         chl_max_npq_depth<-10
+        which_is_npq_changed = which(dep_chl<10)
         
       } else
         
@@ -100,11 +102,12 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
         # correct the profile with the max Fchla
         if (chl_max_npq!=-Inf) {
           chl_npq[which(dep_chl <= chl_max_npq_depth )]<-chl_max_npq
+          which_is_npq_changed = which(dep_chl <= chl_max_npq_depth )
         }
       }
     }
     
   }
-  return(list("chl_npq"=chl_npq, "chl_max_npq_depth"=chl_max_npq_depth))
+  return(list("chl_npq"=chl_npq, "which_is_npq_changed"=which_is_npq_changed))
 }
 

@@ -22,6 +22,7 @@ NPQ_cor_P18 <- function (chl,dep_chl,MLD) {
   MLD<-0.9*MLD # set the MLD value to 90% of its depth
   
   chl_max_npq_depth<-NA
+  which_is_npq_changed = NA
   
   if (length(chl[!is.na(chl)])>5) { # at least 5 no-NA values needed in Fchl profile
     
@@ -77,8 +78,9 @@ NPQ_cor_P18 <- function (chl,dep_chl,MLD) {
       # correct the profile with the max Fchla
       if (chl_max_npq!=-Inf) {
         chl_npq[which(dep_chl <= chl_max_npq_depth )]<-chl_max_npq
+        which_is_npq_changed = which(dep_chl <= chl_max_npq_depth )
       }
     }
   }
-  return(list("chl_npq"=chl_npq, "chl_max_npq_depth"=chl_max_npq_depth))
+  return(list("chl_npq"=chl_npq, "which_is_npq_changed"=which_is_npq_changed))
 }
