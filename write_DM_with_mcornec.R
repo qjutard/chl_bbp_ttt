@@ -14,9 +14,9 @@ library(stringr)
 library(parallel)
 library(stringi)
 
-source("~/Documents/cornec_chla_qc/chl_bbp_ttt/process_files.R")
-source("~/Documents/cornec_chla_qc/chl_bbp_ttt/error_message.R")
-source("~/Documents/cornec_chla_qc/chl_bbp_ttt/increment_N_CALIB.R")
+source(paste(path_to_source, "process_files.R", sep=""))
+source(paste(path_to_source, "error_message.R", sep=""))
+source(paste(path_to_source, "increment_N_CALIB.R", sep=""))
 
 write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
                         accept_descent=FALSE, just_copy=FALSE, fill_value=FALSE, accept_QC3=FALSE){
