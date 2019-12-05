@@ -82,5 +82,5 @@ NPQ_cor_P18 <- function (chl,dep_chl,MLD) {
       }
     }
   }
-  return(list("chl_npq"=chl_npq, "which_is_npq_changed"=which_is_npq_changed))
+  return(list("chl_npq"=chl_npq, "which_is_npq_changed"=which_is_npq_changed, "is_XB18"=FALSE))
 }

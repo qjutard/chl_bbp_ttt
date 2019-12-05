@@ -36,6 +36,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     bbp_offset = NA
     chl_dark_min_pres = NA
     is_npq = FALSE
+	is_XB18 = FALSE
     
     if (!just_copy & !fill_value){
         L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, accept_descent=accept_descent), silent=TRUE)
@@ -55,6 +56,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         is_npq = L$is_npq
         npq_depth = L$npq_depth
         npq_val = L$npq_val
+		is_XB18 = L$is_XB18
     }
 
     ############################
@@ -227,6 +229,9 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     } else {
         scientific_coefficient_chl = paste("CHLA_OFFSET =", 0)
     }
+	if (is_XB18) {
+		scientific_coefficient_chl = paste(scientific_coefficient_chl, ", r = 0.092, iPARmid = 261, e = 2.2")
+	}
     
     if (!is.na(bbp_offset)) {
         scientific_coefficient_bbp = paste("BBP700_OFFSET =", round(bbp_offset,4))
@@ -235,15 +240,19 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     }
     
     ### scientific equation
-    scientific_equation_chl = "CHLA_ADJUSTED = (CHLA-CHLA_OFFSET)/2"
+	if (is_XB18) {
+		scientific_equation_chl = "CHLA_ADJUSTED = ((CHLA-CHLA_OFFSET)/2)/(r+(1-r)/(1+(DOWNWELLING_PAR/iPARmid)^e)), where DOWNWELLING_PAR is interpolated to align with CHLA"
+	} else {
+    	scientific_equation_chl = "CHLA_ADJUSTED = (CHLA-CHLA_OFFSET)/2"
+	}
+    if (is_npq | !is.na(chl_dark_min_pres)){
+        scientific_equation_chl = paste("otherwise ", scientific_equation_chl, sep="")
+    }
     if (!is.na(chl_dark_min_pres)) {
         scientific_equation_chl = paste("CHLA_ADJUSTED = 0 for PRES in [", round(chl_dark_min_pres,4), ",+inf], ", scientific_equation_chl, sep="")
     }
     if (is_npq) {
         scientific_equation_chl = paste("CHLA_ADJUSTED = ", round(npq_val,4), " for PRES in [0, ", round(npq_depth,4),"], ", scientific_equation_chl, sep="")
-    }
-    if (is_npq | !is.na(chl_dark_min_pres)){
-        scientific_equation_chl = paste(scientific_equation_chl, " otherwise", sep="")
     }
     if (is_npq & !is.na(chl_dark_min_pres)){
         if (npq_depth>chl_dark_min_pres){

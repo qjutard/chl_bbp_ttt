@@ -529,7 +529,8 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   flag_NPQ_changed = rep(FALSE, length(chl_npq))
   which_is_npq_changed = chl_npq_list$which_is_npq_changed
   flag_NPQ_changed[which_is_npq_changed] = TRUE # save the values that were changed by the NPQ correction to later write QC
-  
+ 
+  is_XB18 = chl_npq_list$is_XB18 
   
   ############################
   ############ H) BBP700 RETRIEVAL AND TREATMENT
@@ -732,7 +733,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   nc_close(meta_nc) # close meta
   
   ### create error arrays
-  chl_error = pmax( 3 * array(chla_scale, dim(chl_array)), 1.5 * abs(chl_array))
+  chl_error = pmax( 3 * array(chla_scale, dim(chl_array)), 1.0 * abs(chl_array))
   bbp_error = pmax( 3 * array(bbp_scale, dim(bbp_array)), 0.2 * abs(bbp_array))
   
   ############################
@@ -759,7 +760,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
               "CHLA_ADJUSTED_QC"=chl_adjusted_qc, "BBP700_ADJUSTED_QC"=bbp_adjusted_qc,
               "CHLA_ADJUSTED_ERROR"=chl_error, "BBP700_ADJUSTED_ERROR"=bbp_error,
               "chl_dark_offset"=chl_dark_offset, "chl_dark_min_pres"=chl_dark_min_pres,"bbp_offset"=-diff_bottom,
-              "is_npq"=is_npq, "npq_depth"=npq_depth, "npq_val"=npq_val))
+              "is_npq"=is_npq, "npq_depth"=npq_depth, "npq_val"=npq_val, "is_XB18"=is_XB18))
   
 }
 

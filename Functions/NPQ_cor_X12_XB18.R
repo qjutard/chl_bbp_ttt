@@ -28,6 +28,7 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
   chl_npq<-chl
   chl_max_npq_depth<-NA
   which_is_npq_changed = NA
+  is_XB18 = FALSE
   
   if (length(chl[!is.na(chl)])>5) { # at least 5 no-NA values needed in Fchl profile
     
@@ -60,9 +61,9 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
       if (min(MLD,par_15_depth,na.rm=T)==MLD &
           max_Fchl_depth < MLD) {  #XB18 (case for stratified shallow mixing wrs w/o DCM)
         
-        r=0.224
-        iPARmid=297
-        e=2.1
+        r=0.092
+        iPARmid=261
+        e=2.2
         
         # interpolation of the PAR profile at the Fchl depth
         light_interp<-approx(dep_light,light,dep_chl)$y
@@ -81,6 +82,7 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
         
         chl_max_npq_depth<-10
         which_is_npq_changed = which(dep_chl<10)
+		is_XB18 = TRUE
         
       } else
         
@@ -108,6 +110,6 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
     }
     
   }
-  return(list("chl_npq"=chl_npq, "which_is_npq_changed"=which_is_npq_changed))
+  return(list("chl_npq"=chl_npq, "which_is_npq_changed"=which_is_npq_changed, "is_XB18"=is_XB18))
 }
 
