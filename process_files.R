@@ -99,7 +99,7 @@ source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the d
 process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
                          accept_descent=FALSE, accept_QC3=FALSE, plot_chla=FALSE){ 
  
-  print(profile_actual)
+  #print(profile_actual)
     
   #################
   ############# A) SET THE ID

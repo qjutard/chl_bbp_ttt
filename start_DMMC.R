@@ -51,9 +51,13 @@ if (profile_WMO!="NA") {
 }
 
 if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
-    profile_actual = profile_list_all[1]
-    DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
-    write.table(DEEP_EST, "DEEP_EST.t")
+	if (!just_copy & !fill_value) { # DEEP_EST is not necessary if we just want to copy or fill the files
+    	profile_actual = profile_list_all[1]
+    	DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
+    	write.table(DEEP_EST, "DEEP_EST.t")
+	} else {
+		DEEP_EST = NULL
+	}
 } else {
     DEEP_EST = try(read.table(DEEP_EST_table), silent = TRUE)
     if (inherits(DEEP_EST, "try-error")) {
