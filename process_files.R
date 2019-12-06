@@ -97,7 +97,7 @@ source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the d
 #for (profile_actual in profile_list) {
 
 process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
-                         accept_descent=FALSE, accept_QC3=FALSE, plot_chla=FALSE){ 
+                         accept_descent=FALSE, accept_QC3=FALSE, position_override=NULL, plot_chla=FALSE){ 
  
   #print(profile_actual)
     
@@ -235,23 +235,27 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   ############# D) POSITION INFORMATIONS : LON / LAT / DATE
   #################
   
+  lat<-NA
+  lat<- ncvar_get(profile_B,"LATITUDE")[1]
+  lon<-NA
+  lon<- ncvar_get(profile_B,"LONGITUDE")[1]
+  
   position_qc<-NA
   position_qc<-substr(ncvar_get(profile_B,"POSITION_QC"),1,1) # read position QC
   
   # skip the profile if the position QC is bad
   if (position_qc == 3 | position_qc==4) {
     print("bad position")
-    #nc_close(profile) #close the netcdf
-    nc_close(profile_C)
-    nc_close(profile_B)
-    return(102)
+	if (is.null(position_override)) {
+    	nc_close(profile_C)
+    	nc_close(profile_B)
+    	return(102)
+	} else {
+		lat = position_override[1]
+		lon = position_override[2]
+	}
   }
-  
-  lat<-NA
-  lat<- ncvar_get(profile_B,"LATITUDE")[1]
-  lon<-NA
-  lon<- ncvar_get(profile_B,"LONGITUDE")[1]
-  
+   
   # skip the profile if one (or both) coordinate(s) is(are) missing
   if (is.na(lat) | is.na(lon)) {
     print("no geoloc")
