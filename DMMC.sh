@@ -33,7 +33,7 @@ Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>
 [-h] : help
 [-p <position>] : Override the profile position in the case of a bad QC flag ('3' or
                   '4'). <position> should be formatted as 'LAT.lat;LON.lon' with the
-                  sing brackets.
+                  single brackets.
 [-q] : Accept profiles on the greylist with QC='3'.
 
 #########################################################################################
