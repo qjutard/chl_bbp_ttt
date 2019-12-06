@@ -61,6 +61,7 @@ if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
 } else {
     DEEP_EST = try(read.table(DEEP_EST_table), silent = TRUE)
     if (inherits(DEEP_EST, "try-error")) {
+		print(paste("Warning :", DEEP_est_table, "could not be opened as a table"))
         DEEP_EST = NULL
     }
 }
