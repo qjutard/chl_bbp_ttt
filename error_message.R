@@ -26,7 +26,7 @@ error_message <- function(error_id) {
            "202" = "202 : Multiple profiles of CHLA/BBP700 in the profile",
            "203" = "203 : NPQ correction and dark correction cross pressure domain", 
            "204" = "204 : Dimensions of imported arrays are not aligned as expected",
-           "205" = "205 : Unexpected formatting of SCIENTIFIC_CALIB_COEFFICIENT", ###deprecated, to replace
+           "205" = "205 : No CHLA or no BBP700 in variables",
            "206" = "206 : Constructed file names are not unique",
            
            "306" = "306 : Constructed file names are not unique",

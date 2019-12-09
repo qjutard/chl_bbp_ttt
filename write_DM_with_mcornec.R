@@ -120,7 +120,14 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     id_param_bbp_arr = which(parameters=="BBP700                                                          ", arr.ind=TRUE)
     n_prof = dim(parameters)[2]
     
-    if ( length(id_param_chl)!=1 | length(id_param_bbp)!=1 ){
+	if ( length(id_param_chl)<1 | length(id_param_bbp)<1 ){ 
+        print(error_message(205))
+        nc_close(filenc_out)
+        system2("rm", file_out)
+        return(205)
+    } 
+    
+    if ( length(id_param_chl)>1 | length(id_param_bbp)>1 ){ 
         print("several profiles of chl or bbp detected")
         nc_close(filenc_out)
         system2("rm", file_out)
