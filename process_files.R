@@ -259,10 +259,14 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   # skip the profile if one (or both) coordinate(s) is(are) missing
   if (is.na(lat) | is.na(lon)) {
     print("no geoloc")
-    #nc_close(profile) #close the netcdf
-    nc_close(profile_C)
-    nc_close(profile_B)
-    return(103)
+	if (is.null(position_override)) {
+    	nc_close(profile_C)
+    	nc_close(profile_B)
+    	return(103)
+	} else {
+		lat = position_override[1]
+		lon = position_override[2]
+	}
   }
   
   jd<-NA

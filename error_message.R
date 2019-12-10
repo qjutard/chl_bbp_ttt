@@ -11,8 +11,8 @@ error_message <- function(error_id) {
            "0" = "Success",
            
            "101" = "101 : Descent profile, use -d to override", 
-           "102" = "102 : Bad position (QC = 3 or 4)",
-           "103" = "103 : No geolocalisation (lat or lon missing)",
+           "102" = "102 : Bad position (QC = 3 or 4), use -p to force position",
+           "103" = "103 : No geolocalisation (lat or lon missing), use -p to force position",
            "104" = "104 : Date is missing",
            "105" = "105 : Bad date (QC = 3 or 4)",
            "106" = "106 : No CHLA in variables",
