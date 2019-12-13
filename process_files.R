@@ -121,61 +121,9 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   i <-which(substr(prof_id,3,14)==profile_actual) #identify profile position in the index
   dac_prof<-dac[i] #identify the dac
   
-  #################
-  ############# A.1) GREYLIST
-  #################
-  
-  chl_greylist_qc = NA
-  bbp_greylist_qc = NA
-  
-  if (!is.null(index_greylist)) {
-      
-      indices_greylist = which( index_greylist$PLATFORM_CODE==wod[i] & (index_greylist$PARAMETER_NAME=="CHLA" | index_greylist$PARAMETER_NAME=="BBP700") )
-      
-      prof_date_trunc = as.numeric( substr(as.character(prof_date[i]), 1, 8) )
-      
-      for (j in indices_greylist) {
-          
-  		  ## is the profile on te greylist ?
-          is_greylist = FALSE
-          if (is.na(index_greylist$END_DATE[j])) { # all past that date
-              if (prof_date_trunc>=index_greylist$START_DATE[j]) {
-                  is_greylist = TRUE
-              } 
-          } else { # date interval
-              if (index_greylist$START_DATE[j]<=prof_date_trunc & prof_date_trunc<=index_greylist$END_DATE[j]){
-                  is_greylist = TRUE
-              }
-          }
-          
-		  ## what is the QC and what to do ?
-          if (is_greylist){
-              if (index_greylist$QUALITY_CODE[j] == 4) {
-                  print(paste("profile on the greylist with QC 4 at index ", j, " with comment : ", index_greylist$COMMENT[j], sep=""))
-                  return(109)
-              } else if (index_greylist$QUALITY_CODE == 3) {
-                  
-                  if (!accept_QC3) {
-                      print(error_message(111))
-                      return(111)
-                  }
-                  
-                  if (index_greylist$PARAMETER_NAME[j]=="CHLA") { chl_greylist_qc = "3" }
-                  if (index_greylist$PARAMETER_NAME[j]=="BBP700") { bbp_greylist_qc = "3" }
-                  
-              } else {
-                  print(error_message(110))
-                  return(110)
-              }
-          }
-          
-          
-          
-      }
-  }
-  
-  
-  
+ 
+
+ 
   # Skip if the profile is a descent one (optional)
   if (substr(profile_actual,12,12)=="D" & !accept_descent) {
     print("Descent Profile")
@@ -294,6 +242,56 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     nc_close(profile_C)
     nc_close(profile_B)
     return(105)
+  }
+  
+  #################
+  ############# D.1) GREYLIST
+  #################
+  
+  chl_greylist_qc = NA
+  bbp_greylist_qc = NA
+  
+  if (!is.null(index_greylist)) {
+      
+      indices_greylist = which( index_greylist$PLATFORM_CODE==wod[i] & (index_greylist$PARAMETER_NAME=="CHLA" | index_greylist$PARAMETER_NAME=="BBP700") )
+      
+      prof_date_trunc = as.numeric( substr(as.character(prof_date[i]), 1, 8) )
+      
+      for (j in indices_greylist) {
+          
+  		  ## is the profile on te greylist ?
+          is_greylist = FALSE
+          if (is.na(index_greylist$END_DATE[j])) { # all past that date
+              if (prof_date_trunc>=index_greylist$START_DATE[j]) {
+                  is_greylist = TRUE
+              } 
+          } else { # date interval
+              if (index_greylist$START_DATE[j]<=prof_date_trunc & prof_date_trunc<=index_greylist$END_DATE[j]){
+                  is_greylist = TRUE
+              }
+          }
+          
+		  ## what is the QC and what to do ?
+          if (is_greylist){
+              if (index_greylist$QUALITY_CODE[j] == 4) {
+                  print(paste("profile on the greylist with QC 4 at index ", j, " with comment : ", index_greylist$COMMENT[j], sep=""))
+                  return(109)
+              } else if (index_greylist$QUALITY_CODE == 3) {
+                  
+                  if (!accept_QC3) {
+                      print(error_message(111))
+                      return(111)
+                  }
+                  
+                  if (index_greylist$PARAMETER_NAME[j]=="CHLA") { chl_greylist_qc = "3" }
+                  if (index_greylist$PARAMETER_NAME[j]=="BBP700") { bbp_greylist_qc = "3" }
+                  
+              } else {
+                  print(error_message(110))
+                  return(110)
+              }
+          }     
+      }
   }
   
   ###################
