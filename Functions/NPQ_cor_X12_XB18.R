@@ -59,7 +59,7 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
     if (par_15_depth!=Inf & par_15_depth!=-Inf & is.na(MLD)==F) { # if PAR_15 is not beyond/above bound depths
       
       if (min(MLD,par_15_depth,na.rm=T)==MLD &
-          max_Fchl_depth < MLD) {  #XB18 (case for stratified shallow mixing wrs w/o DCM)
+          max_Fchl_depth > MLD) {  #XB18 (case for stratified shallow mixing wrs w/o DCM)
         
         r=0.092
         iPARmid=261
