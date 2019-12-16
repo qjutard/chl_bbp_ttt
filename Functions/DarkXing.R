@@ -49,8 +49,8 @@ DarkXing<-function(dep_chl,chl) {
     min_dep<-NA
     chl_sub<-NA
     dep_chl_sub<-NA
-    chl_sub<-chl_filt_res[which(dep_reg_res>Fchla_max)] # retrieve the part of the chla profile below the maximum of chla depth
-    dep_chl_sub<-dep_reg_res[which(dep_reg_res>Fchla_max)] # retrieve the part of the depth profile below the maximum of chla depth
+    chl_sub<-chl_filt_res[which(dep_reg_res>=Fchla_max)] # retrieve the part of the chla profile below the maximum of chla depth
+    dep_chl_sub<-dep_reg_res[which(dep_reg_res>=Fchla_max)] # retrieve the part of the depth profile below the maximum of chla depth
     min_dep<-dep_chl_sub[min(which.min(chl_sub))] # indentify the depth where the chla is at its minimum value
     min_chla<-min(chl_sub,na.rm=T) # retrieve the min chl value (dark offset)
     chl_dark<-chl_dark-min_chla # correct the chla profile from the offset
