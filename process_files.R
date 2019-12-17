@@ -466,6 +466,42 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   chl_all<-NA
   chl_all<-chl_get
   
+  ############################
+  ############ G.1) Gather meta information
+  ############################
+  
+  ### open the metadata
+  path_to_meta = paste(path_to_netcdf, path_split[1], "/", path_split[2], "/", substring(profile_actual,1,7), "_meta.nc",sep="") # build meta file adress
+  
+  meta_nc = nc_open(path_to_meta) # open meta file
+  
+  calib = ncvar_get(meta_nc,"PREDEPLOYMENT_CALIB_COEFFICIENT") # get the cailbration coefficients
+  
+  ### get the scales
+  
+  # chla scale
+  id_chla = grep("CHLA", calib) # find chla index
+  chla_calib = calib[id_chla] # get chla calibration
+  chla_calib = unlist(strsplit(chla_calib,",")) # separate coefficients
+  chla_calib_scale = chla_calib[grep("SCALE_CHLA",chla_calib)] # get the scale information
+  chla_calib_scale = unlist(strsplit(chla_calib_scale,"=")) # separate the name from the number
+  chla_scale = as.numeric(chla_calib_scale[2]) # get the scale coefficient as a number
+  
+  # bbp scale
+  id_bbp = grep("BACKSCATTERING700", calib) # find bbp index
+  bbp_calib = calib[id_bbp] # get chla calibration
+  bbp_calib = unlist(strsplit(bbp_calib,",")) # separate coefficients
+  bbp_calib_scale = bbp_calib[grep("SCALE_BACKSCATTERING700",bbp_calib)] # get the scale information
+  bbp_calib_scale = unlist(strsplit(bbp_calib_scale,"=")) # separate the name from the number
+  bbp_scale = as.numeric(bbp_calib_scale[2]) # get the scale coefficient as a number
+  
+  ### get the chla dark
+  chla_calib_dark = chla_calib[grep("DARK_CHLA",chla_calib)] # get the dark information
+  chla_calib_dark = unlist(strsplit(chla_calib_dark,"=")) # separate the name from the number
+  chla_dark = as.numeric(chla_calib_dark[2]) # get the scale coefficient as a number
+  
+  nc_close(meta_nc) # close meta
+  
   ############ 1) RANGE TEST : attribute NA to values out of range ###########################
   chl_all[which((chl_all > 50) | (chl_all < - 0.1))]<-NA
   
@@ -494,7 +530,6 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     return(107)
   }
   
-  
   ################ 2) DARK OFFSET #######################
   # correct the vertical profile from a deep offset (Dark_Fchla_Corr function)
   chl_dark<-NA
@@ -503,10 +538,17 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   chl_dark_offset = NA 
   chl_dark_min_pres = NA
-  chl_dark_offset = list_dark$offset # QJ : for scientific_calib_*
+  chl_dark_offset = list_dark$offset
   chl_dark_min_pres = list_dark$min_dep 
   if (!is.na(chl_dark_min_pres)) {
       chl_dark_min_pres = swPressure(chl_dark_min_pres, lat) # invert swDepth
+  }
+  if (!is.na(chl_dark_offset)) {
+	  factory_offset = chla_dark*chla_scale
+	  if ( abs(chl_dark_offset)>0.2*factory_offset ) {
+	  	  print(error_message(112))
+		  return(112)
+	  }
   }
   
   ############ 3) & 4) NPQ and FACTOR 2 ########################
@@ -707,39 +749,9 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   }
   
   ############################
-  ############ K) create error arrays
+  ############ K.1) create error arrays 
   ############################
   
-  ### open the metadata
-  path_to_meta = paste(path_to_netcdf, path_split[1], "/", path_split[2], "/", substring(profile_actual,1,7), "_meta.nc",sep="") # build meta file adress
-  
-  meta_nc = nc_open(path_to_meta) # open meta file
-  
-  calib = ncvar_get(meta_nc,"PREDEPLOYMENT_CALIB_COEFFICIENT") # get the cailbration coefficients
-  
-  ### get the scales
-  
-  # chla scale
-  id_chla = grep("CHLA", calib) # find chla index
-  chla_calib = calib[id_chla] # get chla calibration
-  chla_calib = unlist(strsplit(chla_calib,",")) # separate coefficients
-  chla_calib_scale = chla_calib[grep("SCALE_CHLA",chla_calib)] # get the scale information
-  chla_calib_scale = unlist(strsplit(chla_calib_scale,"=")) # separate the name from the number
-  
-  chla_scale = as.numeric(chla_calib_scale[2]) # get the scale coefficient as a number
-  
-  # bbp scale
-  id_bbp = grep("BACKSCATTERING700", calib) # find bbp index
-  bbp_calib = calib[id_bbp] # get chla calibration
-  bbp_calib = unlist(strsplit(bbp_calib,",")) # separate coefficients
-  bbp_calib_scale = bbp_calib[grep("SCALE_BACKSCATTERING700",bbp_calib)] # get the scale information
-  bbp_calib_scale = unlist(strsplit(bbp_calib_scale,"=")) # separate the name from the number
-  
-  bbp_scale = as.numeric(bbp_calib_scale[2]) # get the scale coefficient as a number
-  
-  nc_close(meta_nc) # close meta
-  
-  ### create error arrays
   chl_error = pmax( 3 * array(chla_scale, dim(chl_array)), 1.0 * abs(chl_array))
   bbp_error = pmax( 3 * array(bbp_scale, dim(bbp_array)), 0.2 * abs(bbp_array))
   

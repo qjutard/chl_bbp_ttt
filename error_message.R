@@ -21,6 +21,7 @@ error_message <- function(error_id) {
            "109" = "109 : Profile is on the greylist with QC 4, do process_file(profile_actual, ...) for details",
            "110" = "110 : Profile is on the greylist with an unmanaged QC",
            "111" = "111 : Profile is on the greylist with QC 3, use -q to override",
+		   "112" = "112 : The calculated dark offset is too far from factory",
            
            "201" = "201 : BD file given as input",
            "202" = "202 : Multiple profiles of CHLA/BBP700 in the profile",

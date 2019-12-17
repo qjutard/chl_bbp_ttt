@@ -94,12 +94,12 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     }
     
     ### check whether the existing file is a D file
-    path_split_B = unlist( strsplit(file_B, "/") )
-    B_type = substr(path_split_B[length(path_split_B)],1,2)
-    if (B_type=="BD"){
-        print("a BD-file has been given as an input, these are currently not accepted")
-        return(201)
-    }
+    #path_split_B = unlist( strsplit(file_B, "/") )
+    #B_type = substr(path_split_B[length(path_split_B)],1,2)
+    #if (B_type=="BD"){
+    #    print("a BD-file has been given as an input, these are currently not accepted")
+    #    return(201)
+    #}
     
     ### create the output file as a copy of the input
     system2("cp", c(file_B, file_out))

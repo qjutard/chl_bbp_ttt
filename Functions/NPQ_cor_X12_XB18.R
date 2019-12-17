@@ -55,7 +55,7 @@ NPQ_cor_X12_XB18 <- function (chl,dep_chl,dep_light,light,MLD) {
     # Identify max Fchla depth
     max_Fchl_depth<-NA
     max_Fchl_depth<-median(dep_reg_res[which(chl_filt_res==max(chl_filt_res,na.rm=T))],na.rm=T)
-    
+
     if (par_15_depth!=Inf & par_15_depth!=-Inf & is.na(MLD)==F) { # if PAR_15 is not beyond/above bound depths
       
       if (min(MLD,par_15_depth,na.rm=T)==MLD &
