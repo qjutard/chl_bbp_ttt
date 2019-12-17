@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() { 
-	echo "Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-p <position>] [-cdfhq]
+	echo "Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-p <position>] [-o <offset>] [-cdfhq]
 Do '$0 -h' for help" 1>&2
 	exit 1 
 }
@@ -12,7 +12,7 @@ helprint() {
 DMMC does Delayed mode computing and writing following the work done by M. Cornec 
 in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)
 
-Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-p <position>] [-cdfhq]
+Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-p <position>] [-o <offset>] [-cdfhq]
 
 ### Options
 
@@ -31,6 +31,11 @@ Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>
 [-d] : Accept descent profile.
 [-f] : Fill the delayed mode profiles with fill values and bad QC.
 [-h] : help
+[-o <offset>] : Override the computed dark offset and pressure minimum for dark. <offset>
+                should be formatted as 'OFF.off;MIN.min' with the single brackets, where
+                where OFF.off is the desired offset (chl_dark=chl-offset) and MIN.min is
+                a pressure from which all chl_dark values are set to 0. Use 'NA' in any
+                or all of these parameters to ignore them (i.e. OFF=0 and MIN=+inf).
 [-p <position>] : Override the profile position in the case of a bad QC flag ('3' or
                   '4'). <position> should be formatted as 'LAT.lat;LON.lon' with the
                   single brackets.
@@ -50,8 +55,9 @@ descent=FALSE
 qc3=FALSE
 Profile=NA
 position=NA
+offset=NA
 
-while getopts W:L:D:cfdqP:p:h option
+while getopts W:L:D:cfdqP:p:o:h option
 do
 case "${option}"
 in
@@ -64,14 +70,10 @@ d) descent=TRUE;;
 q) qc3=TRUE;;
 P) Profile=${OPTARG};;
 p) position=${OPTARG};;
+o) offset=${OPTARG};;
 h) helprint;;
 *) usage;;
 esac
 done
 
-
-#echo ${List}
-#echo ${copy}
-#echo ${WMO}
-
-Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile $position
+Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile $position $offset

@@ -97,7 +97,7 @@ source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the d
 #for (profile_actual in profile_list) {
 
 process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
-                         accept_descent=FALSE, accept_QC3=FALSE, position_override=NULL, plot_chla=FALSE){ 
+                         accept_descent=FALSE, accept_QC3=FALSE, position_override=NULL, offset_override=NULL, plot_chla=FALSE){ 
  
   #print(profile_actual)
     
@@ -543,12 +543,21 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   if (!is.na(chl_dark_min_pres)) {
       chl_dark_min_pres = swPressure(chl_dark_min_pres, lat) # invert swDepth
   }
-  if (!is.na(chl_dark_offset)) {
+
+  if (!is.na(chl_dark_offset) & is.null(offset_override)) {
 	  factory_offset = chla_dark*chla_scale
 	  if ( abs(chl_dark_offset)>0.2*factory_offset ) {
 	  	  print(error_message(112))
 		  return(112)
 	  }
+  }
+  
+  if (!is.null(offset_override)) {
+	  chl_dark_offset = offset_override[1]
+	  chl_dark_min_pres = offset_override[2]
+	  chl_dark = chl
+	  if (!is.na(chl_dark_offset)) { chl_dark = chl_dark - chl_dark_offset }
+	  if (!is.na(chl_dark_min_pres)) { chl_dark[which(dep_chl>=swDepth(chl_dark_min_pres,lat))] = 0 }
   }
   
   ############ 3) & 4) NPQ and FACTOR 2 ########################
