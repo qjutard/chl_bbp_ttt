@@ -8,7 +8,7 @@
 #
 # Inputs:
 # - WMO : the WMO number of the float (7 digits)
-# - chemin: the path to the netcdf files 
+# - path_to_netcdf: the path to the netcdf files 
 # - index_ifremer: the merge index file
 #
 # Output: a dataframe with the reference of the profiles needing deep vertical mixing correction (WMO number of the float + profile number,format: "XXXXXXX_XXX"), 
@@ -17,7 +17,7 @@
 
 
 
-Dark_MLD_table_coriolis<-function (WMO,chemin,index_ifremer) {
+Dark_MLD_table_coriolis<-function (WMO,path_to_netcdf,index_ifremer) {
   
   
   DEEP_EST<-NULL# initiate the output
