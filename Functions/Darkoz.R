@@ -25,7 +25,7 @@ Darkoz<-function(dep_chl,chl,index) {
   step_res<-NA
   step_res<-mean(abs(diff(dep_chl[which(dep_chl<=500)])),na.rm = T)
   
-  if (step_res!=0) { # test if the resolution is non null
+  if (step_res!=0 & !is.na(step_res)) { # test if the resolution is non null
     dep_reg_res<-NA
     dep_reg_res <-seq(0,500,step_res) # set a interpolated depth vector from surface to 500m with steps set as the mean vertical resolution
     chl_interp_res<-NA
