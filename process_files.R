@@ -553,11 +553,13 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   }
   
   if (!is.null(offset_override)) {
-	  chl_dark_offset = offset_override[1]
-	  chl_dark_min_pres = offset_override[2]
-	  chl_dark = chl
-	  if (!is.na(chl_dark_offset)) { chl_dark = chl_dark - chl_dark_offset }
-	  if (!is.na(chl_dark_min_pres)) { chl_dark[which(dep_chl>=swDepth(chl_dark_min_pres,lat))] = 0 }
+      if (offset_override!="dmmc") {
+    	  chl_dark_offset = offset_override[1]
+    	  chl_dark_min_pres = offset_override[2]
+    	  chl_dark = chl
+    	  if (!is.na(chl_dark_offset)) { chl_dark = chl_dark - chl_dark_offset }
+    	  if (!is.na(chl_dark_min_pres)) { chl_dark[which(dep_chl>=swDepth(chl_dark_min_pres,lat))] = 0 }
+      }
   }
   
   ############ 3) & 4) NPQ and FACTOR 2 ########################

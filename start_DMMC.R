@@ -77,7 +77,11 @@ if (position_override_call=="NA") {
 if (offset_override_call=="NA") {
 	offset_override = NULL
 } else {
-	offset_override = as.numeric(unlist(strsplit(offset_override_call, ";")))
+    if (offset_override_call=="dmmc") {
+        offset_override = offset_override_call
+    } else {
+	    offset_override = as.numeric(unlist(strsplit(offset_override_call, ";")))
+    }
 }
 
 ### Compute and write delayed modes

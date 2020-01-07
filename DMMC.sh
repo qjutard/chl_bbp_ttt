@@ -36,6 +36,8 @@ Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>
                 where OFF.off is the desired offset (chl_dark=chl-offset) and MIN.min is
                 a pressure from which all chl_dark values are set to 0. Use 'NA' in any
                 or all of these parameters to ignore them (i.e. OFF=0 and MIN=+inf).
+                The option can also accept 'dmmc' as an argument to just force the use
+                of the offset and min computed by DMMC.
 [-p <position>] : Override the profile position in the case of a bad QC flag ('3' or
                   '4'). <position> should be formatted as 'LAT.lat;LON.lon' with the
                   single brackets.
