@@ -259,7 +259,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
       
       for (j in indices_greylist) {
           
-  		  ## is the profile on te greylist ?
+  		  ## is the profile on the greylist ?
           is_greylist = FALSE
           if (is.na(index_greylist$END_DATE[j])) { # all past that date
               if (prof_date_trunc>=index_greylist$START_DATE[j]) {
@@ -276,7 +276,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
               if (index_greylist$QUALITY_CODE[j] == 4) {
                   print(paste("profile on the greylist with QC 4 at index ", j, " with comment : ", index_greylist$COMMENT[j], sep=""))
                   return(109)
-              } else if (index_greylist$QUALITY_CODE == 3) {
+              } else if (index_greylist$QUALITY_CODE[j] == 3) {
                   
                   if (!accept_QC3) {
                       print(error_message(111))
