@@ -20,7 +20,7 @@ source(paste(path_to_source, "increment_N_CALIB.R", sep=""))
 
 write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
                         accept_descent=FALSE, just_copy=FALSE, fill_value=FALSE, position_override=NULL, 
-                        offset_override=NULL, accept_QC3=FALSE, only_BBP=FALSE){
+                        offset_override=NULL, accept_QC3=FALSE, only_BBP=FALSE, date_override=NULL){
     
 	print(profile_actual)
 	
@@ -42,8 +42,9 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
 	is_XB18 = FALSE
     
     if (!just_copy & !fill_value){
-        L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, accept_descent=accept_descent,
-							 accept_QC3=accept_QC3, position_override=position_override, offset_override=offset_override), silent=TRUE)
+        L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, 
+                             accept_descent=accept_descent, accept_QC3=accept_QC3, position_override=position_override, 
+                             offset_override=offset_override, date_override=date_override), silent=TRUE)
         if (!is.list(L)){
             print("process_file(...) did not end properly")
             return(L)

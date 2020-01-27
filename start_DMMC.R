@@ -19,6 +19,7 @@ Profile = uf[8]
 position_override_call = uf[9]
 offset_override_call = uf[10]
 only_BBP = as.logical(uf[11])
+date_override_call = uf[12]
 
 ### Check that exactly one of WMO, List, or Profile is given
 exists_WMO = as.numeric(profile_WMO!="NA")
@@ -77,12 +78,17 @@ if (position_override_call=="NA") {
 
 if (offset_override_call=="NA") {
 	offset_override = NULL
+} else if (offset_override_call=="dmmc") {
+    offset_override = offset_override_call
 } else {
-    if (offset_override_call=="dmmc") {
-        offset_override = offset_override_call
-    } else {
-	    offset_override = as.numeric(unlist(strsplit(offset_override_call, ";")))
-    }
+	offset_override = as.numeric(unlist(strsplit(offset_override_call, ";")))
+}
+
+if (date_override_call=="NA") {
+    date_override = NULL
+} else {
+    date_override = date_override_call
+    print(date_override)
 }
 
 ### Compute and write delayed modes
@@ -90,7 +96,7 @@ numCores = detectCores()
 M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist, 
                                                           accept_descent=accept_descent, just_copy=just_copy, fill_value=fill_value, 
                                                           accept_QC3=accept_QC3, position_override=position_override, offset_override=offset_override,
-                                                          only_BBP=only_BBP), mc.cores=numCores)
+                                                          only_BBP=only_BBP, date_override=date_override), mc.cores=numCores)
 
 ### assess error messages
 errors = as.numeric(M)

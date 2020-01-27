@@ -97,7 +97,8 @@ source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the d
 #for (profile_actual in profile_list) {
 
 process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
-                         accept_descent=FALSE, accept_QC3=FALSE, position_override=NULL, offset_override=NULL, plot_chla=FALSE){ 
+                         accept_descent=FALSE, accept_QC3=FALSE, position_override=NULL, offset_override=NULL, 
+                         date_override=NULL, plot_chla=FALSE){ 
  
   #print(profile_actual)
     
@@ -192,56 +193,53 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   position_qc<-substr(ncvar_get(profile_B,"POSITION_QC"),1,1) # read position QC
   
   # skip the profile if the position QC is bad
-  if (position_qc == 3 | position_qc==4) {
+  if ( (position_qc == 3 | position_qc==4) & is.null(position_override) ) {
     print("bad position")
-	if (is.null(position_override)) {
-    	nc_close(profile_C)
-    	nc_close(profile_B)
-    	return(102)
-	} else {
-		lat = position_override[1]
-		lon = position_override[2]
-	}
+    nc_close(profile_C)
+    nc_close(profile_B)
+    return(102)
   }
    
   # skip the profile if one (or both) coordinate(s) is(are) missing
-  if (is.na(lat) | is.na(lon)) {
+  if ( (is.na(lat) | is.na(lon)) & is.null(position_override) ) {
     print("no geoloc")
-	if (is.null(position_override)) {
-    	nc_close(profile_C)
-    	nc_close(profile_B)
-    	return(103)
-	} else {
-		lat = position_override[1]
-		lon = position_override[2]
-	}
+    nc_close(profile_C)
+    nc_close(profile_B)
+    return(103)
+  }
+  
+  if (!is.null(position_override)) {
+    lat = position_override[1]
+    lon = position_override[2]
   }
   
   jd<-NA
   jd <- ncvar_get(profile_B,"JULD")[1] #read julian day
   origin<-NA # set the origin date
-  origin<-as.POSIXct("1950-01-01 00:00:00", order="ymdhms") #convert juld->time
+  origin<-as.POSIXct("1950-01-01 00:00:00", order="ymdhms", tz="UTC") #convert juld->time
   time<-NA
   time<-origin + jd*3600*24 #calculate the time (format POSIXct yyyy-mm-dd hh:mm:ss)
   jd_qc<-NA
   jd_qc<-substr(ncvar_get(profile_B,"JULD_QC"),1,1) # read julian day qc
   
   # skip the profile if the date is missing
-  if (is.na(time)) {
-    print("bad date")
-    #nc_close(profile) #close the netcdf
-    nc_close(profile_C)
-    nc_close(profile_B)
-    return(104)
+  if (is.na(time) & is.null(date_override)) {
+      print("bad date")
+      nc_close(profile_C)
+      nc_close(profile_B)
+      return(104)
   }
   
   # skip the profile if julian date qc is bad
-  if (jd_qc == 3 | jd_qc==4) {
-    print("bad date")
-    #nc_close(profile) #close the netcdf
-    nc_close(profile_C)
-    nc_close(profile_B)
-    return(105)
+  if ((jd_qc == 3 | jd_qc==4) & is.null(date_override)) {
+      print("bad date")
+      nc_close(profile_C)
+      nc_close(profile_B)
+      return(105)
+  }
+  
+  if (!is.null(date_override)) {
+      time = as.POSIXct(date_override, format="%Y-%m-%d;%H:%M:%S", tz="UTC") #format POSIXct yyyy-mm-dd hh:mm:ss
   }
   
   #################
@@ -640,7 +638,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     bbp<-bbp+diff_bottom
   }
   
-  if (substr(profile_actual,1,7)==6901174 & format(time,"%Y-%m-%d") >= as.POSIXct("06/03/18",format="%d/%m/%Y")) {
+  if (substr(profile_actual,1,7)==6901174 & format(time,"%Y-%m-%d", tz="UTC") >= as.POSIXct("06/03/2018",format="%d/%m/%Y", tz="UTC")) {
     med_bottom<-NULL
     med_bottom<-median(bbp[which(dep_bbp < 950 & dep_bbp > 850)], na.rm=T)
     diff_bottom<-0.0011-med_bottom
@@ -654,16 +652,16 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     bbp<-bbp+diff_bottom
   }
   
-  if (substr(profile_actual,1,7)==6901485 & format(time,"%Y-%m-%d") >= as.POSIXct("08/05/15",format="%d/%m/%Y") &
-      format(time,"%Y-%m-%d")  <= as.POSIXct("28/07/15",format="%d/%m/%Y")) {
+  if (substr(profile_actual,1,7)==6901485 & format(time,"%Y-%m-%d", tz="UTC") >= as.POSIXct("08/05/2015",format="%d/%m/%Y", tz="UTC") &
+      format(time,"%Y-%m-%d", tz="UTC")  <= as.POSIXct("28/07/2015",format="%d/%m/%Y", tz="UTC")) {
     med_bottom<-NULL
     med_bottom<-median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
     diff_bottom<-0.0012-med_bottom
     bbp<-bbp+diff_bottom
   }
   
-  if (substr(profile_actual,1,7)==6901485 & format(time,"%Y-%m-%d") >= as.POSIXct("01/09/15",format="%d/%m/%Y") &
-      format(time,"%Y-%m-%d")  <= as.POSIXct("04/03/16",format="%d/%m/%Y")) {
+  if (substr(profile_actual,1,7)==6901485 & format(time,"%Y-%m-%d", tz="UTC") >= as.POSIXct("01/09/2015",format="%d/%m/%Y", tz="UTC") &
+      format(time,"%Y-%m-%d", tz="UTC")  <= as.POSIXct("04/03/2016",format="%d/%m/%Y", tz="UTC")) {
     med_bottom<-NULL
     med_bottom<-median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
     diff_bottom<-0.0012-med_bottom
