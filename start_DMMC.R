@@ -18,6 +18,7 @@ accept_QC3 = as.logical(uf[7])
 Profile = uf[8]
 position_override_call = uf[9]
 offset_override_call = uf[10]
+only_BBP = as.logical(uf[11])
 
 ### Check that exactly one of WMO, List, or Profile is given
 exists_WMO = as.numeric(profile_WMO!="NA")
@@ -88,7 +89,8 @@ if (offset_override_call=="NA") {
 numCores = detectCores()
 M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist, 
                                                           accept_descent=accept_descent, just_copy=just_copy, fill_value=fill_value, 
-                                                          accept_QC3=accept_QC3, position_override=position_override, offset_override=offset_override), mc.cores=numCores)
+                                                          accept_QC3=accept_QC3, position_override=position_override, offset_override=offset_override,
+                                                          only_BBP=only_BBP), mc.cores=numCores)
 
 ### assess error messages
 errors = as.numeric(M)

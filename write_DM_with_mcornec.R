@@ -19,7 +19,8 @@ source(paste(path_to_source, "error_message.R", sep=""))
 source(paste(path_to_source, "increment_N_CALIB.R", sep=""))
 
 write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
-                        accept_descent=FALSE, just_copy=FALSE, fill_value=FALSE, position_override=NULL, offset_override=NULL, accept_QC3=FALSE){
+                        accept_descent=FALSE, just_copy=FALSE, fill_value=FALSE, position_override=NULL, 
+                        offset_override=NULL, accept_QC3=FALSE, only_BBP=FALSE){
     
 	print(profile_actual)
 	
@@ -173,7 +174,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     id_calib_bbp = c(id_param_bbp_arr[1], new_cal_bbp, id_param_bbp_arr[2])
     
     # should N_CALIB be incremented ?
-    calib_increment = (new_cal_chl>N_CALIB | new_cal_bbp>N_CALIB)
+    calib_increment = ((new_cal_chl>N_CALIB & !only_BBP) | new_cal_bbp>N_CALIB)
     
     
 
@@ -204,14 +205,17 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ############################
     
     if (!fill_value) { 
-        ncvar_put(filenc_out,"CHLA_ADJUSTED",CHLA_ADJUSTED)
+        if (!only_BBP) {
+            ncvar_put(filenc_out,"CHLA_ADJUSTED",CHLA_ADJUSTED)
+            ncvar_put(filenc_out,"CHLA_ADJUSTED_QC",CHLA_ADJUSTED_QC)
+            ncvar_put(filenc_out,"CHLA_ADJUSTED_ERROR",CHLA_ADJUSTED_ERROR)
+        }
         ncvar_put(filenc_out,"BBP700_ADJUSTED",BBP700_ADJUSTED)
-        ncvar_put(filenc_out,"CHLA_ADJUSTED_QC",CHLA_ADJUSTED_QC)
         ncvar_put(filenc_out,"BBP700_ADJUSTED_QC",BBP700_ADJUSTED_QC)
-        ncvar_put(filenc_out,"CHLA_ADJUSTED_ERROR",CHLA_ADJUSTED_ERROR)
         ncvar_put(filenc_out,"BBP700_ADJUSTED_ERROR",BBP700_ADJUSTED_ERROR)
     } else {
         fill_params = c("CHLA_ADJUSTED", "BBP700_ADJUSTED", "CHLA_ADJUSTED_ERROR", "BBP700_ADJUSTED_ERROR")
+        if (only_BBP) {fill_params = c("BBP700_ADJUSTED", "BBP700_ADJUSTED_ERROR")}
         for (fill_name in fill_params) {
             fill_var = ncvar_get(filenc_out, fill_name)
             fill_var[,] = NA
@@ -219,7 +223,9 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         }
         fill_QC = c("CHLA_ADJUSTED_QC", "BBP700_ADJUSTED_QC")
         fill_QC_var = c("CHLA", "BBP700")
-        for (i in c(1,2)) {
+        fill_QC_axis = c(1,2)
+        if (only_BBP) {fill_QC_axis = c(2)}
+        for (i in fill_QC_axis) {
             fill_test = ncvar_get(filenc_out, fill_QC_var[i], start=c(1,id_prof)) #get the original profile
             fill_space = which(is.na(fill_test))
             fill_test[] = "4"
@@ -304,7 +310,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         
         scientific_calib_info = ncvar_get(filenc_out, SCIENTIFIC_CALIB_VARIABLE[i])
         
-        scientific_calib_info[id_calib_chl[1], id_calib_chl[2], id_calib_chl[3]] = SCIENTIFIC_CALIB_INFO_CHL
+        if (!only_BBP) {scientific_calib_info[id_calib_chl[1], id_calib_chl[2], id_calib_chl[3]] = SCIENTIFIC_CALIB_INFO_CHL}
         scientific_calib_info[id_calib_bbp[1], id_calib_bbp[2], id_calib_bbp[3]] = SCIENTIFIC_CALIB_INFO_BBP
         
         ncvar_put(filenc_out , SCIENTIFIC_CALIB_VARIABLE[i], scientific_calib_info)
@@ -352,13 +358,15 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     n_good_bbp = 100 * sum( bbp_QC=="1" | bbp_QC=="2" | bbp_QC=="5" | bbp_QC=="8" ) / n_QC_bbp
     
     # Write CHLA profile QC
-    if ( n_good_chl == 0) ncvar_put(filenc_out,"PROFILE_CHLA_QC","F",start=id_prof, count=1)
-    if ( n_good_chl > 0 && n_good_chl < 25 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","E",start=id_prof, count=1)
-    if ( n_good_chl >= 25 && n_good_chl < 50 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","D",start=id_prof, count=1)
-    if ( n_good_chl >= 50 && n_good_chl < 75 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","C",start=id_prof, count=1)
-    if ( n_good_chl >= 75 && n_good_chl < 100 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","B",start=id_prof, count=1)
-    if ( n_good_chl == 100 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","A",start=id_prof, count=1)
-    
+    if (!only_BBP) {
+        if ( n_good_chl == 0) ncvar_put(filenc_out,"PROFILE_CHLA_QC","F",start=id_prof, count=1)
+        if ( n_good_chl > 0 && n_good_chl < 25 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","E",start=id_prof, count=1)
+        if ( n_good_chl >= 25 && n_good_chl < 50 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","D",start=id_prof, count=1)
+        if ( n_good_chl >= 50 && n_good_chl < 75 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","C",start=id_prof, count=1)
+        if ( n_good_chl >= 75 && n_good_chl < 100 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","B",start=id_prof, count=1)
+        if ( n_good_chl == 100 ) ncvar_put(filenc_out,"PROFILE_CHLA_QC","A",start=id_prof, count=1)
+    }    
+        
     # Write BBP700 profile QC
     if ( n_good_bbp == 0) ncvar_put(filenc_out,"PROFILE_BBP700_QC","F",start=id_prof, count=1)
     if ( n_good_bbp > 0 && n_good_bbp < 25 ) ncvar_put(filenc_out,"PROFILE_BBP700_QC","E",start=id_prof, count=1)
@@ -375,12 +383,12 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ncvar_put(filenc_out, "DATA_MODE", "D", start=c(id_prof), count=c(1))
     
     # DATA_STATE_INDICATOR
-    DATA_STATE_INDICATOR = rep("2C  ", n_prof)
-    ncvar_put(filenc_out, "DATA_STATE_INDICATOR", DATA_STATE_INDICATOR, start=c(1,1), count=c(4,n_prof))
+    DATA_STATE_INDICATOR = "2C  "
+    ncvar_put(filenc_out, "DATA_STATE_INDICATOR", DATA_STATE_INDICATOR, start=c(1,id_prof), count=c(4,1))
     
     # PARAMETER_DATA_MODE
     PARAMETER_DATA_MODE = ncvar_get(filenc_out,"PARAMETER_DATA_MODE")
-    str_sub(PARAMETER_DATA_MODE[id_param_chl_arr[2]], id_param_chl_arr[1],id_param_chl_arr[1]) = "D"
+    if (!only_BBP) {str_sub(PARAMETER_DATA_MODE[id_param_chl_arr[2]], id_param_chl_arr[1],id_param_chl_arr[1]) = "D"}
     str_sub(PARAMETER_DATA_MODE[id_param_bbp_arr[2]], id_param_bbp_arr[1],id_param_bbp_arr[1]) = "D"
     ncvar_put(filenc_out, "PARAMETER_DATA_MODE", PARAMETER_DATA_MODE)
     
@@ -391,12 +399,13 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Change attributes
     ############################
     
-    comment_dmqc_operator1 = "PRIMARY | https://orcid.org/0000-0001-9992-5334 1 | Raphaelle Sauzede, CNRS" ### TODO fill
-    comment_dmqc_operator2 = "CHLA | https://orcid.org/0000-0002-1230-164X 2 | Catherine Schmechtig, CNRS" ### TODO fill
-    comment_dmqc_operator3 = "BBP700 | https://orcid.org/0000-0002-1230-164X 3 | Catherine Schmechtig, CNRS" ### TODO fill
+    comment_dmqc_operator1 = "PRIMARY | https://orcid.org/0000-0001-9992-5334 1 | Raphaelle Sauzede, CNRS" 
+    comment_dmqc_operator2 = "BBP700 | https://orcid.org/0000-0002-1230-164X 2 | Catherine Schmechtig, CNRS" 
+    comment_dmqc_operator3 = "CHLA | https://orcid.org/0000-0002-1230-164X 3 | Catherine Schmechtig, CNRS" 
+    
     ncatt_put(filenc_out, varid=0, "comment_dmqc_operator1", comment_dmqc_operator1)
     ncatt_put(filenc_out, varid=0, "comment_dmqc_operator2", comment_dmqc_operator2)
-    ncatt_put(filenc_out, varid=0, "comment_dmqc_operator3", comment_dmqc_operator3)
+    if (!only_BBP) {ncatt_put(filenc_out, varid=0, "comment_dmqc_operator3", comment_dmqc_operator3)}
     
     # change history attribute, is it necessary ?
     #history = ncatt_get(filenc_out, varid=0, "history")$value
@@ -409,62 +418,9 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     #ncatt_put(filenc_out, varid=0, "history", history_new)
     
-    
-   
-    #nc_close(filenc_in)
     nc_close(filenc_out)
     
     return(0)
     
 }
 
-### Paths and profile definition
-#index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
-#index_greylist<-read.csv("~/Documents/data/ar_greylist.txt", sep = ",")
-#path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
-#profile_WMO = "6901524"
-#profile_WMO = "6901524"
-
-
-### build list of profiles from float WMO
-#files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
-#ident<-strsplit(files,"/") #separate the different roots of the files paths
-#ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
-#prof_id<-ident[,4] #retrieve all profiles  name as a vector
-#prof_id_WMO = substr(prof_id, 3, 9)
-#profile_list_all = substr(prof_id[which(prof_id_WMO==profile_WMO)], 3, 14)
-#profile_actual = profile_list_all[1]
-
-# Test values
-#profile_list<-c("6901524_150.","6901524_151.","6901524_152.","6901524_153.","6901524_154.","6901524_155.","6901524_001D")
-#profile_actual = profile_list[1]
-#profile_actual = "6901524_150."
-#profile_actual = "6901524_233."
-#profile_actual = "6901524_087."
-#profile_actual = "6901527_213."
-#profile_actual = "6901527_277."
-
-### DEEP_EST should be computed once per FLOAT 
-#DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer) 
-
-# Test the function
-#M = write_DM_MC(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, fill_value = TRUE)
-
-#numCores = detectCores()
-#M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist, accept_descent=FALSE), mc.cores=numCores)
-
-#errors = as.numeric(M)
-
-#n_profiles = length(profile_list_all)
-#n_success = sum(errors==0, na.rm=TRUE) 
-#n_errors = sum(is.na(errors))
-#n_fails = n_profiles - n_success - n_errors
-
-#print(paste(n_profiles,"profiles were found and treated, of which",n_success,"succesfully finished,",n_fails,"were stopped, and",n_errors,"returned an unmanaged error"))
-
-#is_error = which(errors!=0 | is.na(errors))
-
-#messages = M[is_error]
-#is_managed_error = which(!is.na(errors[is_error]))
-#messages[is_managed_error] = lapply(messages[is_managed_error], error_message)
-#View(messages)
