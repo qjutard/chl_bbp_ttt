@@ -20,8 +20,9 @@ position_override_call = uf[9]
 offset_override_call = uf[10]
 only_BBP = as.logical(uf[11])
 date_override_call = uf[12]
+offset_override_file = uf[13]
 
-### Check that exactly one of WMO, List, or Profile is given
+### Check conflicting options
 exists_WMO = as.numeric(profile_WMO!="NA")
 exists_List = as.numeric(List!="NA")
 exists_Profile = as.numeric(Profile!="NA")
@@ -31,16 +32,22 @@ if ( (exists_WMO + exists_List + exists_Profile)!=1 ) {
 	stop()
 }
 
+if (offset_override_call!="NA" & offset_override_file!="NA") {
+    print("Cannot override offsets with -o and -O at the same time")
+    stop()
+}
+
+
 ### import pathways
 source("~/Documents/cornec_chla_qc/chl_bbp_ttt/pathways.R")
-### Source the DM function and subfunctions
-source("~/Documents/cornec_chla_qc/chl_bbp_ttt/write_DM_with_mcornec.R")
+### Source the DM function and subfunctions, and libraries
+source(paste(path_to_source, "write_DM_with_mcornec.R", sep=""))
 
 ### import tables
 index_ifremer<-read.table(path_to_index_ifremer, skip=9, sep = ",")
 index_greylist<-read.csv(path_to_index_greylist, sep = ",")
 
-### build profile_list from WMO
+### build profile_list from WMO, list, or profile name
 if (profile_WMO!="NA") {
     files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
     ident<-strsplit(files,"/") #separate the different roots of the files paths
@@ -84,19 +91,31 @@ if (offset_override_call=="NA") {
 	offset_override = as.numeric(unlist(strsplit(offset_override_call, ";")))
 }
 
+if (offset_override_file!="NA") {
+    offset_override = NULL 
+    offset_table = read.table(offset_override_file)
+    for (i in 1:length(profile_list_all)) {
+        id_prof = which(offset_table$V1 == profile_list_all[i])
+        if (length(id_prof)!=1) {
+            print("One or more profiles has a non unique or non existing corresponding offset in the given offset file (-O)")
+            stop()
+        }
+        offset_override[[i]] = c(offset_table$V2[i], NA) # currently the min argument can only be NA
+    }
+}
+
 if (date_override_call=="NA") {
     date_override = NULL
 } else {
     date_override = date_override_call
-    print(date_override)
 }
 
 ### Compute and write delayed modes
 numCores = detectCores()
-M = mcmapply(write_DM_MC, profile_list_all, MoreArgs=list(index_ifremer, path_to_netcdf, DEEP_EST = DEEP_EST, index_greylist=index_greylist, 
-                                                          accept_descent=accept_descent, just_copy=just_copy, fill_value=fill_value, 
-                                                          accept_QC3=accept_QC3, position_override=position_override, offset_override=offset_override,
-                                                          only_BBP=only_BBP, date_override=date_override), mc.cores=numCores)
+M = mcmapply(write_DM_MC, profile_actual=profile_list_all, offset_override=offset_override, mc.cores=numCores,
+             MoreArgs=list(index_ifremer=index_ifremer, path_to_netcdf=path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, accept_descent=accept_descent,
+                           just_copy=just_copy, fill_value=fill_value, accept_QC3=accept_QC3, position_override=position_override, only_BBP=only_BBP, 
+                           date_override=date_override))
 
 ### assess error messages
 errors = as.numeric(M)
