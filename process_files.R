@@ -531,33 +531,36 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   ################ 2) DARK OFFSET #######################
   # correct the vertical profile from a deep offset (Dark_Fchla_Corr function)
   chl_dark<-NA
-  list_dark = Dark_Fchla_Corr(substr(profile_actual,1,11),chl,dep_chl,MLD,zone,DEEP_EST)
-  chl_dark<-list_dark$chl_dark
-  
   chl_dark_offset = NA 
   chl_dark_min_pres = NA
-  chl_dark_offset = list_dark$offset
-  chl_dark_min_pres = list_dark$min_dep 
-  if (!is.na(chl_dark_min_pres)) {
-      chl_dark_min_pres = swPressure(chl_dark_min_pres, lat) # invert swDepth
-  }
-
-  if (!is.na(chl_dark_offset) & is.null(offset_override)) {
-	  factory_offset = chla_dark*chla_scale
-	  if ( abs(chl_dark_offset)>0.2*factory_offset ) {
-	  	  print(error_message(112))
-		  return(112)
-	  }
-  }
   
-  if (!is.null(offset_override)) {
-      if (offset_override!="dmmc") {
-    	  chl_dark_offset = offset_override[1]
-    	  chl_dark_min_pres = offset_override[2]
-    	  chl_dark = chl
-    	  if (!is.na(chl_dark_offset)) { chl_dark = chl_dark - chl_dark_offset }
-    	  if (!is.na(chl_dark_min_pres)) { chl_dark[which(dep_chl>=swDepth(chl_dark_min_pres,lat))] = 0 }
+  override_is_dmmc = (offset_override=="dmmc")
+  if (length(override_is_dmmc)!=1) {override_is_dmmc=FALSE} #if offset override is NULL or is a vector, it is not =="dmmc"
+  
+  if (is.null(offset_override) | override_is_dmmc) {
+      list_dark = Dark_Fchla_Corr(substr(profile_actual,1,11),chl,dep_chl,MLD,zone,DEEP_EST)
+      chl_dark<-list_dark$chl_dark
+      
+      chl_dark_offset = list_dark$offset
+      chl_dark_min_pres = list_dark$min_dep 
+      if (!is.na(chl_dark_min_pres)) {
+          chl_dark_min_pres = swPressure(chl_dark_min_pres, lat) # invert swDepth
       }
+    
+      if (!is.na(chl_dark_offset)) {
+    	  factory_offset = chla_dark*chla_scale
+    	  if ( abs(chl_dark_offset)>0.2*factory_offset & !override_is_dmmc) {
+    	  	  print(error_message(112))
+    		  return(112)
+    	  }
+      }
+      
+  } else {
+	  chl_dark_offset = offset_override[1]
+	  chl_dark_min_pres = offset_override[2]
+	  chl_dark = chl
+	  if (!is.na(chl_dark_offset)) { chl_dark = chl_dark - chl_dark_offset }
+	  if (!is.na(chl_dark_min_pres)) { chl_dark[which(dep_chl>=swDepth(chl_dark_min_pres,lat))] = 0 }
   }
   
   ############ 3) & 4) NPQ and FACTOR 2 ########################

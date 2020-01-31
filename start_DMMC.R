@@ -61,22 +61,6 @@ if (profile_WMO!="NA") {
     profile_list_all = c(Profile)
 }
 
-if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
-	if (!just_copy & !fill_value) { # DEEP_EST is not necessary if we just want to copy or fill the files
-    	profile_actual = profile_list_all[1]
-    	DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
-    	write.table(DEEP_EST, "DEEP_EST.t")
-	} else {
-		DEEP_EST = NULL
-	}
-} else {
-    DEEP_EST = try(read.table(DEEP_EST_table), silent = TRUE)
-    if (inherits(DEEP_EST, "try-error")) {
-		print(paste("Warning :", DEEP_EST_table, "could not be opened as a table"))
-        DEEP_EST = NULL
-    }
-}
-
 if (position_override_call=="NA") {
 	position_override = NULL
 } else {
@@ -90,7 +74,6 @@ if (offset_override_call=="NA") {
 } else {
 	offset_override = as.numeric(unlist(strsplit(offset_override_call, ";")))
 }
-
 if (offset_override_file!="NA") {
     offset_override = NULL 
     offset_table = read.table(offset_override_file)
@@ -101,6 +84,22 @@ if (offset_override_file!="NA") {
             stop()
         }
         offset_override[[i]] = c(offset_table$V2[i], NA) # currently the min argument can only be NA
+    }
+}
+
+if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
+    if (!just_copy & !fill_value & !is.null(offset_override)) { # DEEP_EST is not necessary if we just want to copy or fill the files, or if offset values are given
+        profile_actual = profile_list_all[1]
+        DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
+        write.table(DEEP_EST, "DEEP_EST.t")
+    } else {
+        DEEP_EST = NULL
+    }
+} else {
+    DEEP_EST = try(read.table(DEEP_EST_table), silent = TRUE)
+    if (inherits(DEEP_EST, "try-error")) {
+        print(paste("Warning :", DEEP_EST_table, "could not be opened as a table"))
+        DEEP_EST = NULL
     }
 }
 
