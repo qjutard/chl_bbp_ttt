@@ -219,7 +219,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         if (only_BBP) {fill_params = c("BBP700_ADJUSTED", "BBP700_ADJUSTED_ERROR")}
         for (fill_name in fill_params) {
             fill_var = ncvar_get(filenc_out, fill_name)
-            fill_var[,] = NA
+            fill_var[] = NA
             ncvar_put(filenc_out, fill_name, fill_var)
         }
         fill_QC = c("CHLA_ADJUSTED_QC", "BBP700_ADJUSTED_QC")
