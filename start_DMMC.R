@@ -68,11 +68,11 @@ if (position_override_call=="NA") {
 }
 
 if (offset_override_call=="NA") {
-	offset_override = NULL
+	offset_override = list(NULL)
 } else if (offset_override_call=="dmmc") {
-    offset_override = offset_override_call
+    offset_override = list(offset_override_call)
 } else {
-	offset_override = as.numeric(unlist(strsplit(offset_override_call, ";")))
+	offset_override = list(as.numeric(unlist(strsplit(offset_override_call, ";"))))
 }
 if (offset_override_file!="NA") {
     offset_override = NULL 
@@ -88,7 +88,7 @@ if (offset_override_file!="NA") {
 }
 
 if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
-    if (!just_copy & !fill_value & !is.null(offset_override)) { # DEEP_EST is not necessary if we just want to copy or fill the files, or if offset values are given
+    if (!just_copy & !fill_value & is.null(offset_override)) { # DEEP_EST is not necessary if we just want to copy or fill the files, or if offset values are given
         profile_actual = profile_list_all[1]
         DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
         write.table(DEEP_EST, "DEEP_EST.t")
