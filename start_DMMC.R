@@ -61,6 +61,10 @@ if (profile_WMO!="NA") {
     profile_list_all = c(Profile)
 }
 
+
+
+### Treat optional arguments
+
 if (position_override_call=="NA") {
 	position_override = NULL
 } else {
@@ -108,6 +112,8 @@ if (date_override_call=="NA") {
 } else {
     date_override = date_override_call
 }
+
+
 
 ### Compute and write delayed modes
 numCores = detectCores()

@@ -175,6 +175,13 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
   file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
   
+  if (length(file_C)==2) { # if both R and D files exist
+      file_C = file_C[1] # use the D file which is first in alphabetical order
+  }
+  if (length(file_B)==2) { # if both R and D files exist
+      file_B = file_B[1] # use the D file which is first in alphabetical order
+  }
+  
   profile_C<-NULL
   profile_B<-NULL
   profile_C <- nc_open(file_C, readunlim=FALSE, write=FALSE)
@@ -537,7 +544,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   override_is_dmmc = (offset_override=="dmmc")
   if (length(override_is_dmmc)!=1) {override_is_dmmc=FALSE} #if offset override is NULL or is a vector, it is not =="dmmc"
   
-  if (is.null(offset_override) | override_is_dmmc) {
+  if (is.null(offset_override) | override_is_dmmc) { # if no override instruction is given or if instruction is to accept the offset from dmmc
       list_dark = Dark_Fchla_Corr(substr(profile_actual,1,11),chl,dep_chl,MLD,zone,DEEP_EST)
       chl_dark<-list_dark$chl_dark
       
@@ -549,13 +556,13 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     
       if (!is.na(chl_dark_offset)) {
     	  factory_offset = chla_dark*chla_scale
-    	  if ( abs(chl_dark_offset)>0.2*factory_offset & !override_is_dmmc) {
+    	  if ( abs(chl_dark_offset)>0.2*factory_offset & !override_is_dmmc) { # only check for error 112 if not instructed to ignore it
     	  	  print(error_message(112))
     		  return(112)
     	  }
       }
       
-  } else {
+  } else { # if on override instruction is given
 	  chl_dark_offset = offset_override[1]
 	  chl_dark_min_pres = offset_override[2]
 	  chl_dark = chl
