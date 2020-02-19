@@ -89,9 +89,8 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
     file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
     file_out = paste(path_to_netcdf, path_to_profile,"/DMMC/DMMC_profiles/", filenc_name_out, sep="") 
-    file_out_copy = paste(path_to_netcdf, path_to_profile,"/DMMC/DMMC_profiles/", filenc_name_out_copy, sep="") 
     
-    if (length(file_B)!=1 | length(file_out)!=1 | length(file_out_copy)!=1) {
+    if (length(file_B)!=1 | length(file_out)!=1) {
         print(error_message(206))
         return(206)
     }
@@ -171,16 +170,17 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     scientific_comment_chl = "CHLA delayed mode adjustment following the work done by M. Cornec in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)"
     scientific_comment_bbp = "BBP700 delayed mode adjustment following the work done by M. Cornec in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)"
     
-    ######### TODO call write_DM for CHLA and BBP700
+    write_DM(file_out=file_out, param_name="BBP700", DATE=DATE, scientific_comment=scientific_comment_bbp, scientific_coefficient=scientific_coefficient_bbp, 
+             scientific_equation=scientific_equation_bbp, param_adjusted=BBP700_ADJUSTED, param_adjusted_qc=BBP700_ADJUSTED_QC, param_adjusted_error=BBP700_ADJUSTED_ERROR,
+             fill_value=fill_value)
     
     if (!only_BBP) {
     write_DM(file_out=file_out, param_name="CHLA", DATE=DATE, scientific_comment=scientific_comment_chl, scientific_coefficient=scientific_coefficient_chl, 
              scientific_equation=scientific_equation_chl, param_adjusted=CHLA_ADJUSTED, param_adjusted_qc=CHLA_ADJUSTED_QC, param_adjusted_error=CHLA_ADJUSTED_ERROR,
              fill_value=fill_value)
     }
-    write_DM(file_out=file_out, param_name="BBP700", DATE=DATE, scientific_comment=scientific_comment_bbp, scientific_coefficient=scientific_coefficient_bbp, 
-             scientific_equation=scientific_equation_bbp, param_adjusted=BBP700_ADJUSTED, param_adjusted_qc=BBP700_ADJUSTED_QC, param_adjusted_error=BBP700_ADJUSTED_ERROR,
-             fill_value=fill_value)
+    
+    
     
     return(0)
     

@@ -206,16 +206,24 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     ### Change attributes
     ############################
     
-    # TODO make it adapt to different parameters and existing comments
+    comment_dmqc_operator_PRIMARY = "PRIMARY | https://orcid.org/0000-0001-9992-5334 | Raphaelle Sauzede, CNRS" 
+    #comment_dmqc_operator_BBP700 = "BBP700 | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS" 
+    #comment_dmqc_operator_CHLA = "CHLA | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS" 
+    comment_dmqc_operator_PARAM = paste(param_name, " | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS", sep="")
     
-    comment_dmqc_operator1 = "PRIMARY | https://orcid.org/0000-0001-9992-5334 1 | Raphaelle Sauzede, CNRS" 
-    comment_dmqc_operator2 = "BBP700 | https://orcid.org/0000-0002-1230-164X 2 | Catherine Schmechtig, CNRS" 
-    comment_dmqc_operator3 = "CHLA | https://orcid.org/0000-0002-1230-164X 3 | Catherine Schmechtig, CNRS" 
+    all_att = ncatt_get(filenc_out, varid=0)
     
-    ncatt_put(filenc_out, varid=0, "comment_dmqc_operator1", comment_dmqc_operator1)
-    ncatt_put(filenc_out, varid=0, "comment_dmqc_operator2", comment_dmqc_operator2)
-    ncatt_put(filenc_out, varid=0, "comment_dmqc_operator3", comment_dmqc_operator3)
+    if (is.null(all_att[["comment_dmqc_operator1"]])) {
+        ncatt_put(filenc_out, varid=0, "comment_dmqc_operator1", comment_dmqc_operator_PRIMARY)
+    }
     
+    for (i in 2:length(all_att)) { #find the first empty comment_dmqc_operatorX (X will always be lower than length(all_att))
+        att_name = paste("comment_dmqc_operator", i, sep="")
+        if ( is.null(all_att[[att_name]]) ) {
+            ncatt_put(filenc_out, varid=0, att_name, comment_dmqc_operator_PARAM)
+            break
+        }
+    }
     
     nc_close(filenc_out)
     
