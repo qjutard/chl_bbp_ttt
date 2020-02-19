@@ -400,9 +400,9 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### Change attributes
     ############################
     
-    comment_dmqc_operator1 = "PRIMARY | https://orcid.org/0000-0001-9992-5334 1 | Raphaelle Sauzede, CNRS" 
-    comment_dmqc_operator2 = "BBP700 | https://orcid.org/0000-0002-1230-164X 2 | Catherine Schmechtig, CNRS" 
-    comment_dmqc_operator3 = "CHLA | https://orcid.org/0000-0002-1230-164X 3 | Catherine Schmechtig, CNRS" 
+    comment_dmqc_operator1 = "PRIMARY | https://orcid.org/0000-0001-9992-5334 | Raphaelle Sauzede, CNRS" 
+    comment_dmqc_operator2 = "BBP700 | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS" 
+    comment_dmqc_operator3 = "CHLA | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS" 
     
     ncatt_put(filenc_out, varid=0, "comment_dmqc_operator1", comment_dmqc_operator1)
     ncatt_put(filenc_out, varid=0, "comment_dmqc_operator2", comment_dmqc_operator2)
