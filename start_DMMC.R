@@ -21,6 +21,7 @@ offset_override_call = uf[10]
 only_BBP = as.logical(uf[11])
 date_override_call = uf[12]
 offset_override_file = uf[13]
+only_CHL = as.logical(uf[14])
 
 ### Check conflicting options
 exists_WMO = as.numeric(profile_WMO!="NA")
@@ -34,6 +35,11 @@ if ( (exists_WMO + exists_List + exists_Profile)!=1 ) {
 
 if (offset_override_call!="NA" & offset_override_file!="NA") {
     print("Cannot override offsets with -o and -O at the same time")
+    stop()
+}
+
+if (only_BBP & only_CHL) {
+    print("-B and -C are conflicting, use neither if you want to write delayed mode of both variables")
     stop()
 }
 
@@ -120,7 +126,7 @@ numCores = detectCores()
 M = mcmapply(write_DM_MC, profile_actual=profile_list_all, offset_override=offset_override, mc.cores=numCores,
              MoreArgs=list(index_ifremer=index_ifremer, path_to_netcdf=path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, accept_descent=accept_descent,
                            just_copy=just_copy, fill_value=fill_value, accept_QC3=accept_QC3, position_override=position_override, only_BBP=only_BBP, 
-                           date_override=date_override))
+                           date_override=date_override, only_CHL=only_CHL))
 
 ### assess error messages
 errors = as.numeric(M)

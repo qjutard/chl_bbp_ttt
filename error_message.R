@@ -2,7 +2,7 @@
 # function giving the error message asociated to an index
 #
 # 1XX : errors in process_files.R
-# 2XX : errors in write_DM_with_mcornec.R
+# 2XX : errors in write_DM_with_mcornec.R or write_DM.R
 # 3XX : errors in increment_N_CALIB.R
 ############################################################
 
