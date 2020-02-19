@@ -19,7 +19,8 @@ source(paste(path_to_source, "increment_N_CALIB.R", sep=""))
 
 write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
                         accept_descent=FALSE, just_copy=FALSE, fill_value=FALSE, position_override=NULL, 
-                        offset_override=NULL, accept_QC3=FALSE, only_BBP=FALSE, date_override=NULL){
+                        offset_override=NULL, accept_QC3=FALSE, only_BBP=FALSE, date_override=NULL,
+                        only_CHL=FALSE){
     
 	print(profile_actual)
 	
@@ -170,14 +171,16 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     scientific_comment_chl = "CHLA delayed mode adjustment following the work done by M. Cornec in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)"
     scientific_comment_bbp = "BBP700 delayed mode adjustment following the work done by M. Cornec in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)"
     
-    write_DM(file_out=file_out, param_name="BBP700", DATE=DATE, scientific_comment=scientific_comment_bbp, scientific_coefficient=scientific_coefficient_bbp, 
-             scientific_equation=scientific_equation_bbp, param_adjusted=BBP700_ADJUSTED, param_adjusted_qc=BBP700_ADJUSTED_QC, param_adjusted_error=BBP700_ADJUSTED_ERROR,
-             fill_value=fill_value)
+    if (!only_CHL) {
+        write_DM(file_out=file_out, param_name="BBP700", DATE=DATE, scientific_comment=scientific_comment_bbp, scientific_coefficient=scientific_coefficient_bbp, 
+                 scientific_equation=scientific_equation_bbp, param_adjusted=BBP700_ADJUSTED, param_adjusted_qc=BBP700_ADJUSTED_QC, 
+                 param_adjusted_error=BBP700_ADJUSTED_ERROR, fill_value=fill_value)
+    }
     
     if (!only_BBP) {
-    write_DM(file_out=file_out, param_name="CHLA", DATE=DATE, scientific_comment=scientific_comment_chl, scientific_coefficient=scientific_coefficient_chl, 
-             scientific_equation=scientific_equation_chl, param_adjusted=CHLA_ADJUSTED, param_adjusted_qc=CHLA_ADJUSTED_QC, param_adjusted_error=CHLA_ADJUSTED_ERROR,
-             fill_value=fill_value)
+        write_DM(file_out=file_out, param_name="CHLA", DATE=DATE, scientific_comment=scientific_comment_chl, scientific_coefficient=scientific_coefficient_chl, 
+                 scientific_equation=scientific_equation_chl, param_adjusted=CHLA_ADJUSTED, param_adjusted_qc=CHLA_ADJUSTED_QC, 
+                 param_adjusted_error=CHLA_ADJUSTED_ERROR, fill_value=fill_value)
     }
     
     

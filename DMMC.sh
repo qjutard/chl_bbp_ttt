@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() { 
-	echo "Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-bcdfhq]
+	echo "Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-B|-C] [-cdfhq]
 Do '$0 -h' for help" 1>&2
 	exit 1 
 }
@@ -12,7 +12,7 @@ helprint() {
 DMMC does Delayed mode computing and writing following the work done by M. Cornec 
 in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)
 
-Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-bcdfhq]
+Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-B|-C] [-cdfhq]
 
 ### Options
 
@@ -46,9 +46,11 @@ Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>
 [-t <date>] : Override the date or date QC. <date> should be formatted as 
               'yyyy-mm-dd;hh:mm:ss' in UTC. This does not change the date in the output
               file.
-[-b] : Only do the delayed mode for BBP700, this only stops the writing of CHLA delayed
+[-B] : Only do the delayed mode for BBP700, this only stops the writing of CHLA delayed
        mode, errors in the computation of CHLA delayed mode are still raised.
 [-c] : Just copy the profiles from the input directory to the output directory.
+[-C] : Only do the delayed mode for CHLA, this only stops the writing of BBP700 delayed
+       mode, errors in the computation of BBP700 delayed mode are still raised.
 [-d] : Accept descent profile.
 [-f] : Fill the delayed mode profiles with fill values and bad QC, without running DMMC
        computations.
@@ -74,8 +76,9 @@ offset=NA
 only_BBP=FALSE
 date=NA
 offset_file=NA
+only_CHL=FALSE
 
-while getopts W:L:D:cfdqP:p:o:bt:O:h option
+while getopts W:L:D:cfdqP:p:o:Bt:O:Ch option
 do
 case "${option}"
 in
@@ -89,12 +92,13 @@ q) qc3=TRUE;;
 P) Profile=${OPTARG};;
 p) position=${OPTARG};;
 o) offset=${OPTARG};;
-b) only_BBP=TRUE;;
+B) only_BBP=TRUE;;
 t) date=${OPTARG};;
 O) offset_file=${OPTARG};;
+C) only_CHL=TRUE;;
 h) helprint;;
 *) usage;;
 esac
 done
 
-Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile $position $offset $only_BBP $date $offset_file
+Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile $position $offset $only_BBP $date $offset_file $only_CHL
