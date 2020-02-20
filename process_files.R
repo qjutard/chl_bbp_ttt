@@ -127,7 +127,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
  
   # Skip if the profile is a descent one (optional)
   if (substr(profile_actual,12,12)=="D" & !accept_descent) {
-    print("Descent Profile")
+    print(error_message(101))
     return(101)
   } 
   
@@ -201,7 +201,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   # skip the profile if the position QC is bad
   if ( (position_qc == 3 | position_qc==4) & is.null(position_override) ) {
-    print("bad position")
+    print(error_message(102))
     nc_close(profile_C)
     nc_close(profile_B)
     return(102)
@@ -209,7 +209,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
    
   # skip the profile if one (or both) coordinate(s) is(are) missing
   if ( (is.na(lat) | is.na(lon)) & is.null(position_override) ) {
-    print("no geoloc")
+    print(error_message(103))
     nc_close(profile_C)
     nc_close(profile_B)
     return(103)
@@ -231,7 +231,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   # skip the profile if the date is missing
   if (is.na(time) & is.null(date_override)) {
-      print("bad date")
+      print(error_message(104))
       nc_close(profile_C)
       nc_close(profile_B)
       return(104)
@@ -239,7 +239,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   # skip the profile if julian date qc is bad
   if ((jd_qc == 3 | jd_qc==4) & is.null(date_override)) {
-      print("bad date")
+      print(error_message(105))
       nc_close(profile_C)
       nc_close(profile_B)
       return(105)
@@ -276,15 +276,18 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
               }
           }
           
-		  ## what is the QC and what to do ?
+		  ## if so, what is the QC and what to do ?
           if (is_greylist){
+              
               if (index_greylist$QUALITY_CODE[j] == 4) {
+                  
                   print(paste("profile on the greylist with QC 4 at index ", j, " with comment : ", index_greylist$COMMENT[j], sep=""))
                   return(109)
+                  
               } else if (index_greylist$QUALITY_CODE[j] == 3) {
                   
                   if (!accept_QC3) {
-                      print(error_message(111))
+                      print(paste("profile on the greylist with QC 3 at index ", j, " with comment : ", index_greylist$COMMENT[j], sep=""))
                       return(111)
                   }
                   
@@ -459,8 +462,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   ###############################
   
   if ("CHLA" %in% names(profile_B$var)==F) { # test if the chla variable is present in the netcdf file (skip if not)
-    print("no chl available")
-    #nc_close(profile) #close the netcdf
+    print(error_message(106))
     nc_close(profile_C)
     nc_close(profile_B)
     return(106)
@@ -528,8 +530,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   # Test if the chl values are associated to only one depth (error of the measurement: "stuck pressure); if so, skip
   if(length(unique(dep_chl))==1) {
-    print("stuck pressure")
-    #nc_close(profile) #close the netcdf file
+    print(error_message(107))
     nc_close(profile_C)
     nc_close(profile_B)
     return(107)
@@ -579,7 +580,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   RESO = NA
   RESO = mean(abs(diff(dep_chl[which(dep_chl<=250)])),na.rm=T) 
   if (RESO==0 | is.na(RESO)){
-      print("RESO = 0")
+      print(error_message(108))
       nc_close(profile_C)
       nc_close(profile_B)
       return(108)

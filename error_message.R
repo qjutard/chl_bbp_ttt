@@ -18,9 +18,9 @@ error_message <- function(error_id) {
            "106" = "106 : No CHLA in variables",
            "107" = "107 : Stuck pressure",
            "108" = "108 : Problem with RESO, possibly due to a partially stuck pressure",
-           "109" = "109 : Profile is on the greylist with QC 4, do process_file(profile_actual, ...) for details",
+           "109" = "109 : Profile is on the greylist with QC 4",
            "110" = "110 : Profile is on the greylist with an unmanaged QC",
-           "111" = "111 : Profile is on the greylist with QC 3, use -q to override",
+           "111" = "111 : Profile is on the greylist with QC 3, use -q to override, see help for details",
 		   "112" = "112 : The calculated dark offset is too far from factory",
            
            "201" = "201 : BD file given as input",
