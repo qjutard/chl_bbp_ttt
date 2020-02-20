@@ -250,15 +250,10 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
       for (j in indices_greylist) {
           
   		  ## is the profile on the greylist ?
-          is_greylist = FALSE
           if (is.na(index_greylist$END_DATE[j])) { # all past that date
-              if (prof_date_trunc>=index_greylist$START_DATE[j]) {
-                  is_greylist = TRUE
-              } 
+              is_greylist = (prof_date_trunc>=index_greylist$START_DATE[j])
           } else { # date interval
-              if (index_greylist$START_DATE[j]<=prof_date_trunc & prof_date_trunc<=index_greylist$END_DATE[j]){
-                  is_greylist = TRUE
-              }
+              is_greylist = (index_greylist$START_DATE[j]<=prof_date_trunc & prof_date_trunc<=index_greylist$END_DATE[j])
           }
           
 		  ## if so, what is the QC and what to do ?
