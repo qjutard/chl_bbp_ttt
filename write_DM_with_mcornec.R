@@ -52,13 +52,19 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
 	is_XB18 = FALSE
     
     if (!just_copy & !fill_value){
+        
         L = try(process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, 
                              accept_descent=accept_descent, accept_QC3=accept_QC3, position_override=position_override, 
                              offset_override=offset_override, date_override=date_override), silent=TRUE)
+        
         if (inherits(L, "try-error")) {
             print("process_file(...) did not end properly")
             return(L)
         }
+        if (is.numeric(L)) { # L is the error index of a managed error
+            return(L)
+        }
+        
         CHLA_ADJUSTED = L$CHLA_ADJUSTED
         BBP700_ADJUSTED = L$BBP700_ADJUSTED
         CHLA_ADJUSTED_QC = L$CHLA_ADJUSTED_QC
@@ -89,7 +95,11 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
     file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
+    dir_out = paste(path_to_netcdf, path_to_profile,"/DMMC/DMMC_profiles", sep="") 
     file_out = paste(path_to_netcdf, path_to_profile,"/DMMC/DMMC_profiles/", filenc_name_out, sep="") 
+    
+    # create directories if they do not exist
+    system2("mkdir", c("-p", dir_out))
     
     if (length(file_B)!=1 | length(file_out)!=1) {
         print(error_message(206))
