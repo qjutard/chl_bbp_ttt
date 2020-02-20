@@ -162,9 +162,12 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         scientific_equation_bbp = "BBP700_ADJUSTED = BBP700, no adjustment needed"
     }
     
+    
     if (fill_value) {
         scientific_equation_chl = "CHLA_ADJUSTED = _FillValue"
         scientific_equation_bbp = "BBP700_ADJUSTED = _FillValue"
+        scientific_coefficient_chl = ""
+        scientific_coefficient_bbp = ""
     }
     
     ### scientific comment
