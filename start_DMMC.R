@@ -50,15 +50,15 @@ source("~/Documents/cornec_chla_qc/chl_bbp_ttt/pathways.R")
 source(paste(path_to_source, "write_DM_with_mcornec.R", sep=""))
 
 ### import tables
-index_ifremer<-read.table(path_to_index_ifremer, skip=9, sep = ",")
-index_greylist<-read.csv(path_to_index_greylist, sep = ",")
+index_ifremer = read.table(path_to_index_ifremer, sep=",", header = T)
+index_greylist = read.csv(path_to_index_greylist, sep = ",")
 
 ### build profile_list from WMO, list, or profile name
 if (profile_WMO!="NA") {
-    files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
-    ident<-strsplit(files,"/") #separate the different roots of the files paths
-    ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
-    prof_id<-ident[,4] #retrieve all profiles  name as a vector
+    files = as.character(index_ifremer$file) #retrieve the path of each netcfd file
+    ident = strsplit(files,"/") #separate the different roots of the files paths
+    ident = matrix(unlist(ident), ncol=4, byrow=TRUE)
+    prof_id = ident[,4] #retrieve all profiles  name as a vector
     prof_id_WMO = substr(prof_id, 3, 9)
     profile_list_all = substr(prof_id[which(prof_id_WMO==profile_WMO)], 3, 14)
 } else if (List!="NA") {
