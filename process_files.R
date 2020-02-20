@@ -167,22 +167,22 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
       file_C = file_C[1] # use the D file which is first in alphabetical order
   }
   
-  profile_C<-NULL
-  profile_B<-NULL
-  profile_C <- nc_open(file_C, readunlim=FALSE, write=FALSE)
-  profile_B <- nc_open(file_B, readunlim=FALSE, write=FALSE)
+  profile_C = NULL
+  profile_B = NULL
+  profile_C = nc_open(file_C, readunlim=FALSE, write=FALSE)
+  profile_B = nc_open(file_B, readunlim=FALSE, write=FALSE)
   
   #################
   ############# D) POSITION INFORMATIONS : LON / LAT / DATE
   #################
   
-  lat<-NA
-  lat<- ncvar_get(profile_B,"LATITUDE")[1]
-  lon<-NA
-  lon<- ncvar_get(profile_B,"LONGITUDE")[1]
+  lat = NA
+  lat = ncvar_get(profile_B,"LATITUDE")[1]
+  lon = NA
+  lon = ncvar_get(profile_B,"LONGITUDE")[1]
   
-  position_qc<-NA
-  position_qc<-substr(ncvar_get(profile_B,"POSITION_QC"),1,1) # read position QC
+  position_qc = NA
+  position_qc = substr(ncvar_get(profile_B,"POSITION_QC"),1,1) # read position QC
   
   # skip the profile if the position QC is bad
   if ( (position_qc == 3 | position_qc==4) & is.null(position_override) ) {
@@ -205,14 +205,14 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     lon = position_override[2]
   }
   
-  jd<-NA
-  jd <- ncvar_get(profile_B,"JULD")[1] #read julian day
-  origin<-NA # set the origin date
-  origin<-as.POSIXct("1950-01-01 00:00:00", order="ymdhms", tz="UTC") #convert juld->time
-  time<-NA
-  time<-origin + jd*3600*24 #calculate the time (format POSIXct yyyy-mm-dd hh:mm:ss)
-  jd_qc<-NA
-  jd_qc<-substr(ncvar_get(profile_B,"JULD_QC"),1,1) # read julian day qc
+  jd = NA
+  jd = ncvar_get(profile_B,"JULD")[1] #read julian day
+  origin = NA # set the origin date
+  origin = as.POSIXct("1950-01-01 00:00:00", order="ymdhms", tz="UTC") #convert juld->time
+  time = NA
+  time = origin + jd*3600*24 #calculate the time (format POSIXct yyyy-mm-dd hh:mm:ss)
+  jd_qc = NA
+  jd_qc = substr(ncvar_get(profile_B,"JULD_QC"),1,1) # read julian day qc
   
   # skip the profile if the date is missing
   if (is.na(time) & is.null(date_override)) {
@@ -291,119 +291,119 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   ############# E) PHYSICS INFORMATIONS : DEPTH / TEMP / SAL / POTENTIAL DENSITY / MLD
   ##################
   
-  pres<-NA 
-  pres <- as.vector(ncvar_get(profile_B,"PRES")) #read the pressure variable as one unique vector
-  pres_qc<-NULL #set the qc pressure 
+  pres = NA 
+  pres = as.vector(ncvar_get(profile_B,"PRES")) #read the pressure variable as one unique vector
+  pres_qc = NULL #set the qc pressure 
   
-  parameters<-ncvar_get(profile_B,"STATION_PARAMETERS") #read the parameters variable (indicating the variables corresponding to each column of the profile file)
+  parameters = ncvar_get(profile_B,"STATION_PARAMETERS") #read the parameters variable (indicating the variables corresponding to each column of the profile file)
   
   # Change the QC pressure to 1 for the bio-optic parameters (remove some Argo processing issue putting wrong QC pressure)
   for (ik in 1:dim(ncvar_get(profile_C,"PRES_QC"))) {
     if (length(grep("CHLA",parameters[,ik]))==1 | #identify the columns where bio-optic parameters are measured
         length(grep("BBP700",parameters[,ik]))==1) {
-      optic_depth_qc<-NA
-      optic_depth_qc<-paste(rep(1,nchar(ncvar_get(profile_C,"PRES_QC")[1])),collapse="") #create vector with QC 1 
-      pres_qc<-paste(pres_qc,optic_depth_qc,sep="") # bind the qc vectors per column into one
+      optic_depth_qc = NA
+      optic_depth_qc = paste(rep(1,nchar(ncvar_get(profile_C,"PRES_QC")[1])),collapse="") #create vector with QC 1 
+      pres_qc = paste(pres_qc,optic_depth_qc,sep="") # bind the qc vectors per column into one
       next
     }
-    pres_qc<-paste(pres_qc,ncvar_get(profile_C,"PRES_QC")[ik],sep="") # bind the qc vectors per column into one
+    pres_qc = paste(pres_qc,ncvar_get(profile_C,"PRES_QC")[ik],sep="") # bind the qc vectors per column into one
   }
   
   # put NA to pressure with a bad QC
   for (jj in 1:nchar(pres_qc)) {
     if (substr(pres_qc,jj,jj)==3 | substr(pres_qc,jj,jj)==4) {
-      pres[jj]<-NA
+      pres[jj] = NA
     }
   }
   
-  pres_na<-na.omit(pres) #remove NAs
-  pres_order<-pres_na[order(pres_na)] # order pres
-  depth<-swDepth(pres_order,lat) #convert pressure into depth (package oce) according to the latitude
-  DEPTH<-unique(depth) # remove duplicata
+  pres_na = na.omit(pres) #remove NAs
+  pres_order = pres_na[order(pres_na)] # order pres
+  depth = swDepth(pres_order,lat) #convert pressure into depth (package oce) according to the latitude
+  DEPTH = unique(depth) # remove duplicata
   
   
-  temp_get<-NA
-  temp_get <- as.vector(ncvar_get(profile_C,"TEMP")) #read the temperature variable as one unique vector
+  temp_get = NA
+  temp_get  =  as.vector(ncvar_get(profile_C,"TEMP")) #read the temperature variable as one unique vector
   
   # read the qc temp
-  temp_qc<-NULL 
+  temp_qc = NULL 
   for (ik in 1:dim(ncvar_get(profile_C,"TEMP_QC"))) {
-    temp_qc<-paste(temp_qc,ncvar_get(profile_C,"TEMP_QC")[ik],sep="")
+    temp_qc = paste(temp_qc,ncvar_get(profile_C,"TEMP_QC")[ik],sep="")
   }
   
   # attribute NA to temp values with bad qc
-  temp_all<-NA
-  temp_all<-temp_get
+  temp_all = NA
+  temp_all = temp_get
   for (jj in 1:nchar(temp_qc)) {
     if (substr(temp_qc,jj,jj)==3 | substr(temp_qc,jj,jj)==4) {
-      temp_all[jj]<-NA
+      temp_all[jj] = NA
     }
   }
   
-  pres_temp<-NA
-  pres_temp<-pres[which(!is.na(pres)==T & !is.na(temp_all)==T)] # attribute pressure vector corresponding to the temperature values (with no NAs)
-  temp<-NA
-  temp<-temp_all[which(!is.na(pres)==T & !is.na(temp_all)==T)] # remove NAs from the temp vector
-  temp<-temp[order(pres_temp)] # order the temp vector according to the increasing pressure
-  pres_temp<-pres_temp[order(pres_temp)] # order the pressure vector corresponding to the temperature
+  pres_temp = NA
+  pres_temp = pres[which(!is.na(pres)==T & !is.na(temp_all)==T)] # attribute pressure vector corresponding to the temperature values (with no NAs)
+  temp = NA
+  temp = temp_all[which(!is.na(pres)==T & !is.na(temp_all)==T)] # remove NAs from the temp vector
+  temp = temp[order(pres_temp)] # order the temp vector according to the increasing pressure
+  pres_temp = pres_temp[order(pres_temp)] # order the pressure vector corresponding to the temperature
   
-  sal_get<-NA
-  sal_get <- as.vector(ncvar_get(profile_C,"PSAL")) #read the salinity variable as one unique vector
+  sal_get = NA
+  sal_get  =  as.vector(ncvar_get(profile_C,"PSAL")) #read the salinity variable as one unique vector
   
   # read the qc sal 
-  sal_qc<-NULL
+  sal_qc = NULL
   for (ik in 1:dim(ncvar_get(profile_C,"PSAL_QC"))) {
-    sal_qc<-paste(sal_qc,ncvar_get(profile_C,"PSAL_QC")[ik],sep="")
+    sal_qc = paste(sal_qc,ncvar_get(profile_C,"PSAL_QC")[ik],sep="")
   }
   
   # attribute NA to sal values with bad qc
-  sal_all<-NA
-  sal_all<-sal_get
+  sal_all = NA
+  sal_all = sal_get
   for (jj in 1:nchar(sal_qc)) {
     if (substr(sal_qc,jj,jj)==3 | substr(sal_qc,jj,jj)==4) {
-      sal_all[jj]<-NA
+      sal_all[jj] = NA
     }
   }
   
-  pres_sal<-NA
-  pres_sal<-pres[which(!is.na(pres)==T & !is.na(sal_all)==T)] # attribute pressure vector corresponding to the salinity values (with no NAs)
-  sal<-NA
-  sal<-sal_all[which(!is.na(pres)==T & !is.na(sal_all)==T)]# remove NAs from the salinity vector
-  sal<-sal[order(pres_sal)] # order the sal vector according to the increasing pressure
-  pres_sal<-pres_sal[order(pres_sal)] # order the pressure vector corresponding to the salinity
+  pres_sal = NA
+  pres_sal = pres[which(!is.na(pres)==T & !is.na(sal_all)==T)] # attribute pressure vector corresponding to the salinity values (with no NAs)
+  sal = NA
+  sal = sal_all[which(!is.na(pres)==T & !is.na(sal_all)==T)]# remove NAs from the salinity vector
+  sal = sal[order(pres_sal)] # order the sal vector according to the increasing pressure
+  pres_sal = pres_sal[order(pres_sal)] # order the pressure vector corresponding to the salinity
   
   
   # Calculate sigma (potential density)
   for (wii in 1:length(sal_all)) {
     if (is.na(sal_all[wii])==T | is.na(temp_all[wii])==T) { #attribute NA to salinity initial vector where there is corresponding NA in the initial temp vector (and inverse)
-      sal_all[wii]<-NA
-      temp_all[wii]<-NA
+      sal_all[wii] = NA
+      temp_all[wii] = NA
     }
   }
-  sigma_all<-NA
-  sigma_all <- swSigmaTheta(sal_all,temp_all,pres) # calculation of sigma (package oce)
-  pres_sigma<-NA
-  pres_sigma<-pres[which(!is.na(pres)==T & !is.na(sigma_all)==T)] # attribute pressure vector corresponding to the sigmainity values (with no NAs)
-  sigma<-NA
-  sigma<-sigma_all[which(!is.na(pres)==T & !is.na(sigma_all)==T)]# remove NAs from the sigmainity vector
-  sigma<-sigma[order(pres_sigma)] # order the sigma vector according to the increasing pressure
-  pres_sigma<-pres_sigma[order(pres_sigma)] # order the pressure vector corresponding to the sigmainity
+  sigma_all = NA
+  sigma_all = swSigmaTheta(sal_all,temp_all,pres) # calculation of sigma (package oce)
+  pres_sigma = NA
+  pres_sigma = pres[which(!is.na(pres)==T & !is.na(sigma_all)==T)] # attribute pressure vector corresponding to the sigmainity values (with no NAs)
+  sigma = NA
+  sigma = sigma_all[which(!is.na(pres)==T & !is.na(sigma_all)==T)]# remove NAs from the sigmainity vector
+  sigma = sigma[order(pres_sigma)] # order the sigma vector according to the increasing pressure
+  pres_sigma = pres_sigma[order(pres_sigma)] # order the pressure vector corresponding to the sigmainity
   
   # calculate depth from pressure for the different depth vector (package oce) according to the latitude
-  dep_temp<-NA
+  dep_temp = NA
   dep_temp = swDepth(pres_temp,lat)
-  dep_sal<-NA
+  dep_sal = NA
   dep_sal = swDepth(pres_sal,lat)
-  dep_sigma<-NA
+  dep_sigma = NA
   dep_sigma = swDepth(pres_sigma,lat)
   
   # Zone calculation from Zone function
-  zone<-NA
-  zone<-Zone(lat,lon,temp,dep_temp)
+  zone = NA
+  zone = Zone(lat,lon,temp,dep_temp)
   
   # Calculate of MLD (crit diff dty 0.03) from MLD_calc function
-  MLD<-NA
-  MLD<-MLD_calc(sigma,dep_sigma)
+  MLD = NA
+  MLD = MLD_calc(sigma,dep_sigma)
   
   
   ##############################
@@ -412,33 +412,33 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   # Needed for the NPQ correction 
   
   if ("DOWNWELLING_PAR" %in% names(profile_B$var)==T) { # test if the variable is present in the netcdf file
-    light_get<-NA
-    light_get <- as.vector(ncvar_get(profile_B,"DOWNWELLING_PAR"))  #read the PAR variable as one unique vector
+    light_get = NA
+    light_get = as.vector(ncvar_get(profile_B,"DOWNWELLING_PAR"))  #read the PAR variable as one unique vector
     
     # read the qc varaible as a vector
-    light_qc<-NULL
+    light_qc = NULL
     for (ik in 1:dim(ncvar_get(profile_B,"DOWNWELLING_PAR_QC"))) {
-      light_qc<-paste(light_qc,ncvar_get(profile_B,"DOWNWELLING_PAR_QC")[ik],sep="")
+      light_qc = paste(light_qc,ncvar_get(profile_B,"DOWNWELLING_PAR_QC")[ik],sep="")
     }
     
     # attribute NA to par values with bad qc
-    light_all<-NA
-    light_all<-light_get
+    light_all = NA
+    light_all = light_get
     for (jj in 1:nchar(light_qc)) {
       if (substr(light_qc,jj,jj)==3 | substr(light_qc,jj,jj)==4) {
-        light_all[jj]<-NA
+        light_all[jj] = NA
       }
     }
     
-    pres_light<-NA
-    pres_light<-pres[which(!is.na(pres)==T & !is.na(light_all)==T)] # attribute pressure vector corresponding to the light values (with no NAs)
-    light<-NA
-    light<-light_all[which(!is.na(pres)==T & !is.na(light_all)==T)]# remove NAs from the light vector
-    light<-light[order(pres_light)] # order the light vector according to the increasing pressure
-    pres_light<-pres_light[order(pres_light)] # order the pressure vector corresponding to the light
+    pres_light = NA
+    pres_light = pres[which(!is.na(pres)==T & !is.na(light_all)==T)] # attribute pressure vector corresponding to the light values (with no NAs)
+    light = NA
+    light = light_all[which(!is.na(pres)==T & !is.na(light_all)==T)]# remove NAs from the light vector
+    light = light[order(pres_light)] # order the light vector according to the increasing pressure
+    pres_light = pres_light[order(pres_light)] # order the pressure vector corresponding to the light
     
     # calculate depth from pressure (package oce) according to the latitude
-    dep_light<-NA
+    dep_light = NA
     dep_light = swDepth(pres_light,lat)
   }
   
@@ -453,10 +453,10 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     return(106)
   }
   
-  chl_get<-NA
-  chl_get <- as.vector(ncvar_get(profile_B,"CHLA"))  #read the chla variable as one unique vector
-  chl_all<-NA
-  chl_all<-chl_get
+  chl_get = NA
+  chl_get = as.vector(ncvar_get(profile_B,"CHLA"))  #read the chla variable as one unique vector
+  chl_all = NA
+  chl_all = chl_get
   
   ############################
   ############ G.1) Gather meta information
@@ -495,22 +495,22 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   nc_close(meta_nc) # close meta
   
   ############ 1) RANGE TEST : attribute NA to values out of range ###########################
-  chl_all[which((chl_all > 50) | (chl_all < - 0.1))]<-NA
+  chl_all[which((chl_all > 50) | (chl_all < - 0.1))] = NA
   
   chl_not_isna = NA
   chl_not_isna = which(!is.na(pres)==T & !is.na(chl_all)==T) # keep the information on NA values to later add them
   
-  pres_chl<-NA
-  pres_chl<-pres[chl_not_isna] # attribute pressure vector corresponding to the chl values (with no NAs)
-  chl<-NA
-  chl<-chl_all[chl_not_isna]# remove NAs from the chl vector
+  pres_chl = NA
+  pres_chl = pres[chl_not_isna] # attribute pressure vector corresponding to the chl values (with no NAs)
+  chl = NA
+  chl = chl_all[chl_not_isna]# remove NAs from the chl vector
   pres_chl_unsorted = NA
   pres_chl_unsorted = pres_chl # save the vector before it was sorted to allow for unsorting
-  chl<-chl[order(pres_chl)] # order the chl vector according to the increasing pressure
-  pres_chl<-pres_chl[order(pres_chl)] # order the pressure vector corresponding to the chl
+  chl = chl[order(pres_chl)] # order the chl vector according to the increasing pressure
+  pres_chl = pres_chl[order(pres_chl)] # order the pressure vector corresponding to the chl
   
   # calculate depth from pressure (package oce) according to the latitude
-  dep_chl<-NA
+  dep_chl = NA
   dep_chl = swDepth(pres_chl,lat)
   
   # Test if the chl values are associated to only one depth (error of the measurement: "stuck pressure); if so, skip
@@ -523,7 +523,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   ################ 2) DARK OFFSET #######################
   # correct the vertical profile from a deep offset (Dark_Fchla_Corr function)
-  chl_dark<-NA
+  chl_dark = NA
   chl_dark_offset = NA 
   chl_dark_min_pres = NA
   
@@ -532,7 +532,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   if (is.null(offset_override) | override_is_dmmc) { # if no override instruction is given or if instruction is to accept the offset from dmmc
       list_dark = Dark_Fchla_Corr(substr(profile_actual,1,11), chl, dep_chl, MLD, zone, DEEP_EST)
-      chl_dark<-list_dark$chl_dark
+      chl_dark = list_dark$chl_dark
       
       chl_dark_offset = list_dark$offset
       chl_dark_min_pres = list_dark$min_dep 
@@ -571,9 +571,9 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   }
   
   if ("DOWNWELLING_PAR" %in% names(profile_B$var)==T) { # test if there is a PAR in situ measured
-    chl_npq_list<-NPQ_cor_X12_XB18(chl_dark/2,dep_chl,dep_light,light,MLD)
+    chl_npq_list = NPQ_cor_X12_XB18(chl_dark/2,dep_chl,dep_light,light,MLD)
   } else {
-    chl_npq_list<-NPQ_cor_P18(chl_dark/2,dep_chl,MLD)
+    chl_npq_list = NPQ_cor_P18(chl_dark/2,dep_chl,MLD)
   }
   
   chl_npq=chl_npq_list$chl_npq
@@ -589,29 +589,29 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   ############ H) BBP700 RETRIEVAL AND TREATMENT
   ############################
   
-  bbp_get<-NA
-  bbp_get <- as.vector(ncvar_get(profile_B,"BBP700")) #read the chla variable as one unique vector
+  bbp_get = NA
+  bbp_get = as.vector(ncvar_get(profile_B,"BBP700")) #read the chla variable as one unique vector
   
-  bbp_all<-NA
-  bbp_all<-bbp_get
+  bbp_all = NA
+  bbp_all = bbp_get
   
   ################### 1) RANGE TEST ###############################
-  bbp_all[which((bbp_all > 0.1) | (bbp_all <  (-0.000005)))]<-NA
+  bbp_all[which((bbp_all > 0.1) | (bbp_all <  (-0.000005)))] = NA
   
   bbp_not_isna = NA
   bbp_not_isna = which(!is.na(pres)==T & !is.na(bbp_all)==T) # keep the information on NA values to later add them
   
-  pres_bbp<-NA
-  pres_bbp<-pres[bbp_not_isna] # attribute pressure vector corresponding to the bbp values (with no NAs)
-  bbp<-NA
-  bbp<-bbp_all[bbp_not_isna]# remove NAs from the bbp vector
+  pres_bbp = NA
+  pres_bbp = pres[bbp_not_isna] # attribute pressure vector corresponding to the bbp values (with no NAs)
+  bbp = NA
+  bbp = bbp_all[bbp_not_isna]# remove NAs from the bbp vector
   pres_bbp_unsorted = NA
   pres_bbp_unsorted = pres_bbp # save the vector before it was sorted to allow for unsorting
-  bbp<-bbp[order(pres_bbp)] # order the bbp vector according to the increasing pressure
-  pres_bbp<-pres_bbp[order(pres_bbp)] # order the pressure vector corresponding to the bbp
+  bbp = bbp[order(pres_bbp)] # order the bbp vector according to the increasing pressure
+  pres_bbp = pres_bbp[order(pres_bbp)] # order the pressure vector corresponding to the bbp
   
   # calculate depth from pressure (package oce) according to the latitude
-  dep_bbp<-NA
+  dep_bbp = NA
   dep_bbp = swDepth(pres_bbp,lat)
   
   
@@ -620,47 +620,47 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   diff_bottom = NA
   
   if (substr(profile_actual,1,7)==5904218 & substr(profile_actual,1,11) < 660 & substr(profile_actual,1,11) > 456 ) {
-    med_bottom<-NULL
-    med_bottom<-median(bbp[which(dep_bbp < 300 & dep_bbp > 250)], na.rm=T)
-    diff_bottom<-0-med_bottom
-    bbp<-bbp+diff_bottom
+    med_bottom = NULL
+    med_bottom = median(bbp[which(dep_bbp < 300 & dep_bbp > 250)], na.rm=T)
+    diff_bottom = 0-med_bottom
+    bbp = bbp+diff_bottom
   }
   
   if (substr(profile_actual,1,7)==2902092 & substr(profile_actual,1,11) < 125 & substr(profile_actual,1,11) > 97 ) {
-    med_bottom<-NULL
-    med_bottom<-median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
-    diff_bottom<-0.000035-med_bottom
-    bbp<-bbp+diff_bottom
+    med_bottom = NULL
+    med_bottom = median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
+    diff_bottom = 0.000035-med_bottom
+    bbp = bbp+diff_bottom
   }
   
   if (substr(profile_actual,1,7)==6901174 & format(time,"%Y-%m-%d", tz="UTC") >= as.POSIXct("06/03/2018",format="%d/%m/%Y", tz="UTC")) {
-    med_bottom<-NULL
-    med_bottom<-median(bbp[which(dep_bbp < 950 & dep_bbp > 850)], na.rm=T)
-    diff_bottom<-0.0011-med_bottom
-    bbp<-bbp+diff_bottom
+    med_bottom = NULL
+    med_bottom = median(bbp[which(dep_bbp < 950 & dep_bbp > 850)], na.rm=T)
+    diff_bottom = 0.0011-med_bottom
+    bbp = bbp+diff_bottom
   }
   
   if (substr(profile_actual,1,7)==2902118 ) {
-    med_bottom<-NULL
-    med_bottom<-median(bbp[which(dep_bbp < 950 & dep_bbp > 850)], na.rm=T)
-    diff_bottom<-0.00035-med_bottom
-    bbp<-bbp+diff_bottom
+    med_bottom = NULL
+    med_bottom = median(bbp[which(dep_bbp < 950 & dep_bbp > 850)], na.rm=T)
+    diff_bottom = 0.00035-med_bottom
+    bbp = bbp+diff_bottom
   }
   
   if (substr(profile_actual,1,7)==6901485 & format(time,"%Y-%m-%d", tz="UTC") >= as.POSIXct("08/05/2015",format="%d/%m/%Y", tz="UTC") &
       format(time,"%Y-%m-%d", tz="UTC")  <= as.POSIXct("28/07/2015",format="%d/%m/%Y", tz="UTC")) {
-    med_bottom<-NULL
-    med_bottom<-median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
-    diff_bottom<-0.0012-med_bottom
-    bbp<-bbp+diff_bottom
+    med_bottom = NULL
+    med_bottom = median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
+    diff_bottom = 0.0012-med_bottom
+    bbp = bbp+diff_bottom
   }
   
   if (substr(profile_actual,1,7)==6901485 & format(time,"%Y-%m-%d", tz="UTC") >= as.POSIXct("01/09/2015",format="%d/%m/%Y", tz="UTC") &
       format(time,"%Y-%m-%d", tz="UTC")  <= as.POSIXct("04/03/2016",format="%d/%m/%Y", tz="UTC")) {
-    med_bottom<-NULL
-    med_bottom<-median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
-    diff_bottom<-0.0012-med_bottom
-    bbp<-bbp+diff_bottom
+    med_bottom = NULL
+    med_bottom = median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
+    diff_bottom = 0.0012-med_bottom
+    bbp = bbp+diff_bottom
   }
   
   ############################

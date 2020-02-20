@@ -17,31 +17,32 @@
 
 
 
-Dark_MLD_table_coriolis<-function (WMO,path_to_netcdf,index_ifremer) {
+Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
   
   
-  DEEP_EST<-NULL# initiate the output
+  DEEP_EST = NULL # initiate the output
   
   # Read the index_ifremer file
-  files<-as.character(index_ifremer[,1])
-  ident<-strsplit(files,"/")
-  ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
-  dac<-ident[,1]
-  wod<-ident[,2]
-  prof_id<-ident[,4]
-  variables<-as.character(index_ifremer[,8])
-  lat<-index_ifremer[,3]
-  lon<-index_ifremer[,4]
-  variables<-strsplit(variables," ") #séparer les l'identification des différentes variables
-  float_list<-unique(wod)
+  files = as.character(index_ifremer$file) #retrieve the path of each netcfd file
+  ident = strsplit(files,"/") #separate the different roots of the files paths
+  ident = matrix(unlist(ident), ncol=4, byrow=TRUE)
+  dac = ident[,1] #retrieve the DAC of all profiles as a vector
+  wod = ident[,2] #retrieve the WMO of all profiles as a vector
+  prof_id = ident[,4] #retrieve all profiles  name as a vector
+  variables = as.character(index_ifremer$parameters) #retrieve the list of variables available in each file
+  variables = strsplit(variables," ") #separate the different available variables of each profile
+  lat = index_ifremer$latitude #retrieve the latitude of all profiles as a vector
+  lon = index_ifremer$longitude #retrieve the longitude of all profiles as a vector
   
-  deep_table<-NULL # set the time serie dataframe
+  float_list = unique(wod)
+  
+  deep_table = NULL # set the time serie dataframe
   
   
   for(i in files[which(wod==WMO)])  { #loop on the profiles corresponding to the WMO
     
     # skip the profile if no "CHLA" is measured 
-    if ("CHLA" %in% variables[[which(files==i)]] ==F) {
+    if ("CHLA" %in% variables[[which(files==i)]] == F) {
       next
     }  
     
@@ -53,31 +54,28 @@ Dark_MLD_table_coriolis<-function (WMO,path_to_netcdf,index_ifremer) {
       next
     } 
     
+    file_B = NA
+    file_B = paste(path_to_netcdf, i, sep="") 
+    
     path_split = NA
-    path_split = unlist( strsplit(i,"/") )
+    path_split = unlist( strsplit(i, "/") )
     path_to_profile = NA
     path_to_profile = paste(path_split[1], path_split[2], path_split[3], sep="/")
     
-    filenc_name_M = NA
     filenc_name_C = NA
-    filenc_name_B = NA
-    filenc_name_M = path_split[4]
-    filenc_name_C = paste("?",substring(filenc_name_M, 3),sep="")
-    filenc_name_B = paste("B", filenc_name_C, sep="")
-    
-    file_M = NA
     file_C = NA
-    file_B = NA
-    file_M = files[i]
-    file_C = paste(path_to_netcdf, path_to_profile,"/", filenc_name_C, sep="") 
-    file_C = system2("ls",file_C,stdout=TRUE) # identify R or D file 
-    file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
-    file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
+    filenc_name_C = paste("?",substring(path_split[4], 3),sep="")
+    file_C = paste(path_to_netcdf, path_to_profile, "/", filenc_name_C, sep="") 
+    file_C = system2("ls", file_C, stdout=TRUE) # identify R or D file 
     
-    profile_C<-NULL
-    profile_B<-NULL
-    profile_C <- nc_open(file_C, readunlim=FALSE, write=FALSE)
-    profile_B <- nc_open(file_B, readunlim=FALSE, write=FALSE)
+    if (length(file_C)==2) { # if both R and D files exist
+        file_C = file_C[1] # use the D file which is first in alphabetical order
+    }
+    
+    profile_C = NULL
+    profile_B = NULL
+    profile_C = nc_open(file_C, readunlim=FALSE, write=FALSE)
+    profile_B = nc_open(file_B, readunlim=FALSE, write=FALSE)
     
     #################
     ############# POSITION : LON / LAT / DATE

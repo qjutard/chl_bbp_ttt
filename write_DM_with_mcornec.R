@@ -29,7 +29,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ident = matrix(unlist(ident), ncol=4, byrow=TRUE)
     prof_id = ident[,4] #retrieve all profiles  name as a vector
     
-    iii <-which(substr(prof_id,3,14)==profile_actual) #identify profile position in the index
+    iii = which(substr(prof_id,3,14)==profile_actual) #identify profile position in the index
     
     ############################
     ### Get the chla and bbp corrections from the meihod
