@@ -32,8 +32,8 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
         return(202)
     } 
     
-    N_HISTORY=filenc_out$dim[['N_HISTORY']]$len
-    i_history=N_HISTORY+1
+    N_HISTORY = filenc_out$dim[['N_HISTORY']]$len
+    i_history = N_HISTORY+1
     
     
     ### find adequate N_CALIB
@@ -159,6 +159,9 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     
     HISTORY_ACTION = "CV  "
     ncvar_put(filenc_out, "HISTORY_ACTION", HISTORY_ACTION, start=c(1,id_prof,i_history), count=c(4,1,1))
+    
+    HISTORY_PARAMETER = str_pad(param_name, 64, side="right")
+    ncvar_put(filenc_out, "HISTORY_PARAMETER", HISTORY_PARAMETER, start=c(1,id_prof,i_history), count=c(64,1,1))
     
     ############################
     ### Write profile_QC
