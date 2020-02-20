@@ -65,40 +65,40 @@ Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>
 
 WMO=NA
 List=NA
-DEEP=NA
-copy=FALSE
-fill=FALSE
-descent=FALSE
-qc3=FALSE
 Profile=NA
-position=NA
+DEEP=NA
 offset=NA
-only_BBP=FALSE
-date=NA
-offset_file=NA
-only_CHL=FALSE
+Offset_file=NA
+position=NA
+time_date=NA
+BBP_only=FALSE
+CHL_only=FALSE
+copy=FALSE
+descent=FALSE
+fill=FALSE
+qc3=FALSE
 
-while getopts W:L:D:cfdqP:p:o:Bt:O:Ch option
+while getopts W:L:P:D:o:O:p:t:BcCdfqh option
 do
 case "${option}"
 in
 W) WMO=${OPTARG};;
 L) List=${OPTARG};;
-D) DEEP=${OPTARG};;
-c) copy=TRUE;;
-f) fill=TRUE;;
-d) descent=TRUE;;
-q) qc3=TRUE;;
 P) Profile=${OPTARG};;
-p) position=${OPTARG};;
+D) DEEP=${OPTARG};;
 o) offset=${OPTARG};;
-B) only_BBP=TRUE;;
-t) date=${OPTARG};;
-O) offset_file=${OPTARG};;
-C) only_CHL=TRUE;;
+O) Offset_file=${OPTARG};;
+p) position=${OPTARG};;
+t) time_date=${OPTARG};;
+B) BBP_only=TRUE;;
+c) copy=TRUE;;
+C) CHL_only=TRUE;;
+d) descent=TRUE;;
+f) fill=TRUE;;
+q) qc3=TRUE;;
 h) helprint;;
 *) usage;;
 esac
 done
 
-Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile $position $offset $only_BBP $date $offset_file $only_CHL
+Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile $position $offset $BBP_only $time_date $Offset_file $CHL_only
