@@ -106,32 +106,27 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   ############# A) SET THE ID
   #################
     
-  files<-as.character(index_ifremer[,1]) #retrieve the path of each netcfd file
-  ident<-strsplit(files,"/") #separate the different roots of the files paths
-  ident<-matrix(unlist(ident), ncol=4, byrow=TRUE)
-  dac<-ident[,1] #retrieve the DAC of all profiles as a vector
-  wod<-ident[,2] #retrieve the WMO of all profiles as a vector
-  prof_id<-ident[,4] #retrieve all profiles  name as a vector
-  variables<-as.character(index_ifremer[,8]) #retrieve the list of variables available in each file
-  variables<-strsplit(variables," ") #separate the different available variables of each profile
-  lat<-index_ifremer[,3] #retrieve the latitude of all profiles as a vector
-  lon<-index_ifremer[,4] #retrieve the longitude of all profiles as a vector
-  prof_date = index_ifremer$V2 #retrieve the date of all profiles as a vector
+  files = as.character(index_ifremer$file) #retrieve the path of each netcfd file
+  ident = strsplit(files,"/") #separate the different roots of the files paths
+  ident = matrix(unlist(ident), ncol=4, byrow=TRUE)
+  dac = ident[,1] #retrieve the DAC of all profiles as a vector
+  wod = ident[,2] #retrieve the WMO of all profiles as a vector
+  prof_id = ident[,4] #retrieve all profiles  name as a vector
+  variables = as.character(index_ifremer$parameters) #retrieve the list of variables available in each file
+  variables = strsplit(variables," ") #separate the different available variables of each profile
+  lat = index_ifremer$latitude #retrieve the latitude of all profiles as a vector
+  lon = index_ifremer$longitude #retrieve the longitude of all profiles as a vector
+  prof_date = index_ifremer$date #retrieve the date of all profiles as a vector
   
-  www<-substr(profile_actual,1,11)
-  i <-which(substr(prof_id,3,14)==profile_actual) #identify profile position in the index
-  dac_prof<-dac[i] #identify the dac
-  
- 
-
+  www = substr(profile_actual,1,11)
+  iii = which(substr(prof_id,3,14)==profile_actual) #identify profile position in the index
+  dac_prof = dac[iii] #identify the dac
  
   # Skip if the profile is a descent one (optional)
   if (substr(profile_actual,12,12)=="D" & !accept_descent) {
     print(error_message(101))
     return(101)
   } 
-  
-  
   
   #################
   ############# B) DARK TEST FOR DEEP VERTICAL MIXING FURTHER CORRECTION
@@ -154,32 +149,22 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   ############# C) OPEN THE FILE
   #################
   
+  file_B = NA
+  file_B = paste(path_to_netcdf, files[iii], sep="") 
+  
   path_split = NA
-  path_split = unlist( strsplit(files[i],"/") )
+  path_split = unlist( strsplit(files[iii], "/") )
   path_to_profile = NA
   path_to_profile = paste(path_split[1], path_split[2], path_split[3], sep="/")
   
-  filenc_name_M = NA
   filenc_name_C = NA
-  filenc_name_B = NA
-  filenc_name_M = path_split[4]
-  filenc_name_C = paste("?",substring(filenc_name_M, 3),sep="")
-  filenc_name_B = paste("B", filenc_name_C, sep="")
-  
-  file_M = NA
   file_C = NA
-  file_B = NA
-  file_M = files[i]
-  file_C = paste(path_to_netcdf, path_to_profile,"/", filenc_name_C, sep="") 
-  file_C = system2("ls",file_C,stdout=TRUE) # identify R or D file 
-  file_B = paste(path_to_netcdf, path_to_profile,"/", filenc_name_B, sep="") 
-  file_B = system2("ls",file_B,stdout=TRUE) # identify R or D file 
+  filenc_name_C = paste("?",substring(path_split[4], 3),sep="")
+  file_C = paste(path_to_netcdf, path_to_profile, "/", filenc_name_C, sep="") 
+  file_C = system2("ls", file_C, stdout=TRUE) # identify R or D file 
   
   if (length(file_C)==2) { # if both R and D files exist
       file_C = file_C[1] # use the D file which is first in alphabetical order
-  }
-  if (length(file_B)==2) { # if both R and D files exist
-      file_B = file_B[1] # use the D file which is first in alphabetical order
   }
   
   profile_C<-NULL
@@ -258,9 +243,9 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   if (!is.null(index_greylist)) {
       
-      indices_greylist = which( index_greylist$PLATFORM_CODE==wod[i] & (index_greylist$PARAMETER_NAME=="CHLA" | index_greylist$PARAMETER_NAME=="BBP700") )
+      indices_greylist = which( index_greylist$PLATFORM_CODE==wod[iii] & (index_greylist$PARAMETER_NAME=="CHLA" | index_greylist$PARAMETER_NAME=="BBP700") )
       
-      prof_date_trunc = as.numeric( substr(as.character(prof_date[i]), 1, 8) )
+      prof_date_trunc = as.numeric( substr(as.character(prof_date[iii]), 1, 8) )
       
       for (j in indices_greylist) {
           
@@ -546,7 +531,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   if (length(override_is_dmmc)!=1) {override_is_dmmc=FALSE} #if offset override is NULL or is a vector, it is not =="dmmc"
   
   if (is.null(offset_override) | override_is_dmmc) { # if no override instruction is given or if instruction is to accept the offset from dmmc
-      list_dark = Dark_Fchla_Corr(substr(profile_actual,1,11),chl,dep_chl,MLD,zone,DEEP_EST)
+      list_dark = Dark_Fchla_Corr(substr(profile_actual,1,11), chl, dep_chl, MLD, zone, DEEP_EST)
       chl_dark<-list_dark$chl_dark
       
       chl_dark_offset = list_dark$offset
@@ -562,7 +547,6 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     		  return(112)
     	  }
       }
-      
   } else { # if on override instruction is given
 	  chl_dark_offset = offset_override[1]
 	  chl_dark_min_pres = offset_override[2]
