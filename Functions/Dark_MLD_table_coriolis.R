@@ -47,9 +47,9 @@ Dark_MLD_table_coriolis <- function (WMO, path_to_netcdf, index_ifremer, n_cores
     iii<-prof_id[which(files==i)] # read the profile reference
     
     # skip if the profile is a descent one
-    if(substr(iii,14,14)=="D") {
-      return(1)
-    } 
+    #if(substr(iii,14,14)=="D") {
+    #  return(1)
+    #} 
     
     file_B = NA
     file_B = paste(path_to_netcdf, i, sep="") 
@@ -140,7 +140,7 @@ Dark_MLD_table_coriolis <- function (WMO, path_to_netcdf, index_ifremer, n_cores
     profile_dark$dark_deep<-NA
     profile_dark$profile<-NA
     
-    profile_dark$WMO<-substr(iii,3,13) # add the profile id (wmo number+profile number)
+    profile_dark$WMO<-substr(iii,3,14) # add the profile id (wmo number+profile number)
     profile_dark$profile<-as.numeric(paste(substr(iii,11,13))) # add the profile number only
     profile_dark$TIME<-time # add the time (posixct format)
     profile_dark$JULD<-jd #add the time (julian day format)

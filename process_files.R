@@ -526,7 +526,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   if (length(override_is_dmmc)!=1) {override_is_dmmc=FALSE} #if offset override is NULL or is a vector, it is not =="dmmc"
   
   if (is.null(offset_override) | override_is_dmmc) { # if no override instruction is given or if instruction is to accept the offset from dmmc
-      list_dark = Dark_Fchla_Corr(substr(profile_actual,1,11), chl, dep_chl, MLD, zone, DEEP_EST)
+      list_dark = Dark_Fchla_Corr(profile_actual, chl, dep_chl, MLD, zone, DEEP_EST)
       chl_dark = list_dark$chl_dark
       
       chl_dark_offset = list_dark$offset
