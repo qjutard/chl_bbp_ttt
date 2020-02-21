@@ -53,6 +53,9 @@ source(paste(path_to_source, "write_DM_with_mcornec.R", sep=""))
 index_ifremer = read.table(path_to_index_ifremer, sep=",", header = T)
 index_greylist = read.csv(path_to_index_greylist, sep = ",")
 
+# for parallelization
+num_cores = detectCores()
+
 ### build profile_list from WMO, list, or profile name
 if (profile_WMO!="NA") {
     files = as.character(index_ifremer$file) #retrieve the path of each netcfd file
@@ -100,7 +103,7 @@ if (offset_override_file!="NA") {
 if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
     if (!just_copy & !fill_value & offset_override_call=="NA" & offset_override_file=="NA") { # DEEP_EST is not necessary if we just want to copy or fill the files, or if offset values are given
         profile_actual = profile_list_all[1]
-        DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
+        DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer, n_cores=num_cores)
         write.table(DEEP_EST, "DEEP_EST.t", row.names=F)
     } else {
         DEEP_EST = NULL
@@ -122,8 +125,7 @@ if (date_override_call=="NA") {
 
 
 ### Compute and write delayed modes
-numCores = detectCores()
-M = mcmapply(write_DM_MC, profile_actual=profile_list_all, offset_override=offset_override, mc.cores=numCores,
+M = mcmapply(write_DM_MC, profile_actual=profile_list_all, offset_override=offset_override, mc.cores=num_cores,
              MoreArgs=list(index_ifremer=index_ifremer, path_to_netcdf=path_to_netcdf, DEEP_EST=DEEP_EST, index_greylist=index_greylist, accept_descent=accept_descent,
                            just_copy=just_copy, fill_value=fill_value, accept_QC3=accept_QC3, position_override=position_override, only_BBP=only_BBP, 
                            date_override=date_override, only_CHL=only_CHL))

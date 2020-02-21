@@ -17,7 +17,7 @@
 
 
 
-Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
+Dark_MLD_table_coriolis <- function (WMO, path_to_netcdf, index_ifremer, n_cores=1) {
   
   
   DEEP_EST = NULL # initiate the output
@@ -36,14 +36,11 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
   
   float_list = unique(wod)
   
-  deep_table = NULL # set the time serie dataframe
-  
-  
-  for(i in files[which(wod==WMO)])  { #loop on the profiles corresponding to the WMO
+  get_profile_dark <- function(i)  { #loop on the profiles corresponding to the WMO, i is a file name
     
     # skip the profile if no "CHLA" is measured 
     if ("CHLA" %in% variables[[which(files==i)]] == F) {
-      next
+      return(1)
     }  
     
     iii<-NA
@@ -51,7 +48,7 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
     
     # skip if the profile is a descent one
     if(substr(iii,14,14)=="D") {
-      next
+      return(1)
     } 
     
     file_B = NA
@@ -89,7 +86,7 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
         #nc_close(profile)
         nc_close(profile_C)
         nc_close(profile_B)
-        next
+        return(1)
     }
     
     lat<-NA
@@ -102,7 +99,7 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
         #nc_close(profile)
         nc_close(profile_C)
         nc_close(profile_B)
-        next
+        return(1)
     }
     
     jd<-NA
@@ -119,7 +116,7 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
         #nc_close(profile)
         nc_close(profile_C)
         nc_close(profile_B)
-        next
+        return(1)
     }
     
     # skip the profile if julian date qc is bad
@@ -127,7 +124,7 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
         #nc_close(profile)
         nc_close(profile_C)
         nc_close(profile_B)
-        next
+        return(1)
     }
     
     #########################
@@ -272,7 +269,7 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
         #nc_close(profile)
         nc_close(profile_C)
         nc_close(profile_B)
-        next
+        return(1)
     }
     
     chl_get<-NA
@@ -300,7 +297,7 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
         #nc_close(profile)
         nc_close(profile_C)
         nc_close(profile_B)
-        next
+        return(1)
     }
     
     
@@ -316,20 +313,34 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
                                       dep_chl>= (max(dep_chl,na.rm=T)-50))],na.rm=T)
         
         profile_dark$dark_deep<-dark_deep #add the dark_deep median value in the profile dataframe 
-        deep_table<-rbind(deep_table,profile_dark) # bind the profile dataframe to the time serie dataframe
+        #deep_table<-rbind(deep_table,profile_dark) # bind the profile dataframe to the time serie dataframe
+        
+        return(profile_dark)
       }
     }
     #nc_close(profile)
     nc_close(profile_C)
     nc_close(profile_B)
+    
+    return(1)
+  }
+  
+  deep_table_par = mcmapply(get_profile_dark, files[which(wod==WMO)], mc.cores=n_cores, USE.NAMES=FALSE)
+  
+  is_num = mapply(is.numeric, deep_table_par) # find the files where a num (1) was returned, indicating that the profile is to ignore
+  deep_table_par = deep_table_par[which(!is_num)] # remove the axis where errors were found
+  
+  deep_table = NULL # set the time serie dataframe
+  for (jj in 1:length(deep_table_par)) {
+      deep_table = rbind(deep_table, deep_table_par[[jj]])
   }
   
   ###################################
   ######################### DEEP VERTICAL MIXING CASES
   ###################################
   
-  if(all(is.na(deep_table$dark_deep))==F) { # test if the time serie dataframe present non NA values
-    if(length(deep_table[,1]) > 5) { # test if there is at least 5 deep_dark profiles values
+  if (all(is.na(deep_table$dark_deep))==F) { # test if the time serie dataframe present non NA values
+    if (length(deep_table[,1]) > 5) { # test if there is at least 5 deep_dark profiles values
       
       # add a column in the dataframe indicating if there is profile with an MLD deeper than 600m
       deep_table$MLD_deep<-NA
@@ -350,7 +361,7 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
       deep_table$corr_need[which(deep_table$flag_out==1 & deep_table$MLD_deep ==1 )]<-1
       
       
-      if(length(deep_table[which(deep_table$corr_need==1),1]) > 0) { # test one or more profiles need the deep mixing correction
+      if (length(deep_table[which(deep_table$corr_need==1),1]) > 0) { # test one or more profiles need the deep mixing correction
         for (kk in deep_table$profile[which(deep_table$corr_need==1)]) {
           
           # calculate the deep mixing offset fot the concerned profile (from the robust linear regression coefficients)
@@ -360,8 +371,8 @@ Dark_MLD_table_coriolis <- function (WMO,path_to_netcdf,index_ifremer) {
           sub_ref<-NA
           sub_ref<-deep_table$WMO[which(deep_table$profile==kk)] #select the WMO reference of the profile (WMO + profile number, 11 elements, format: "XXXXXXX_XXX")
           mer_est<-NA
-          mer_est<-as.data.frame(cbind(sub_ref,dark_est)) # create a dataframe with the WMO reference and the dark deep mixing coefficient
-          DEEP_EST<-rbind(DEEP_EST,mer_est) # bind all the profiles needing the dark ddep vertical mixing correction
+          mer_est<-as.data.frame(cbind(sub_ref, dark_est)) # create a dataframe with the WMO reference and the dark deep mixing coefficient
+          DEEP_EST<-rbind(DEEP_EST, mer_est) # bind all the profiles needing the dark ddep vertical mixing correction
         }
       }
       
