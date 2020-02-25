@@ -22,6 +22,7 @@ only_BBP = as.logical(uf[11])
 date_override_call = uf[12]
 offset_override_file = uf[13]
 only_CHL = as.logical(uf[14])
+test_env = as.logical(uf[15])
 
 ### Check conflicting options
 exists_WMO = as.numeric(profile_WMO!="NA")
@@ -46,6 +47,10 @@ if (only_BBP & only_CHL) {
 
 ### import pathways
 source("~/Documents/cornec_chla_qc/chl_bbp_ttt/pathways.R")
+if (test_env) {
+	path_to_netcdf = path_to_netcdf_test_env
+}
+
 ### Source the DM function and subfunctions, and libraries
 source(paste(path_to_source, "write_DM_with_mcornec.R", sep=""))
 
@@ -145,4 +150,8 @@ messages = M[is_error]
 is_managed_error = which(!is.na(errors[is_error]))
 messages[is_managed_error] = lapply(messages[is_managed_error], error_message)
 
-write.table(unlist(messages), "list_errors.t", col.names = FALSE)
+write.table(unlist(messages), "list_errors.t", col.names=FALSE)
+
+if (test_env) {
+	write.table(c(n_profiles, n_success, n_fails, n_errors), "test_n_errors.t", col.names=FALSE, row.names=FALSE)
+}

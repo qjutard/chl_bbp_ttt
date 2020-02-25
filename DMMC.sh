@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() { 
-	echo "Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-B|-C] [-cdfhq]
+	echo "Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-B|-C] [-cdfhqT]
 Do '$0 -h' for help" 1>&2
 	exit 1 
 }
@@ -12,7 +12,7 @@ helprint() {
 DMMC does Delayed mode computing and writing following the work done by M. Cornec 
 in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)
 
-Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-B|-C] [-cdfhq]
+Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-B|-C] [-cdfhqT]
 
 ### Options
 
@@ -57,6 +57,7 @@ Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>
 [-h] : help
 [-q] : Accept profiles on the greylist with QC='3', this also limits the QC of adjusted
        parameters to '3' at best.
+[-T] : Work in test environment (for development purposes).
 
 #########################################################################################
 " 1>&2
@@ -77,8 +78,9 @@ copy=FALSE
 descent=FALSE
 fill=FALSE
 qc3=FALSE
+Test_env=FALSE
 
-while getopts W:L:P:D:o:O:p:t:BcCdfqh option
+while getopts W:L:P:D:o:O:p:t:BcCdfqTh option
 do
 case "${option}"
 in
@@ -96,9 +98,10 @@ C) CHL_only=TRUE;;
 d) descent=TRUE;;
 f) fill=TRUE;;
 q) qc3=TRUE;;
+T) Test_env=TRUE;;
 h) helprint;;
 *) usage;;
 esac
 done
 
-Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile $position $offset $BBP_only $time_date $Offset_file $CHL_only
+Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile $position $offset $BBP_only $time_date $Offset_file $CHL_only $Test_env

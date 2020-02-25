@@ -7,3 +7,7 @@ path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
 
 # Windows
 #path_to_netcdf = "/mnt/c/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
+
+# Test environment (not needed for common user)
+path_to_netcdf_test_env = "~/Documents/cornec_chla_qc/test_env/netcdf/"
+
