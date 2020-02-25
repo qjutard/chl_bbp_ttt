@@ -331,10 +331,12 @@ Dark_MLD_table_coriolis <- function (WMO, path_to_netcdf, index_ifremer, n_cores
   deep_table_par = deep_table_par[which(!is_num)] # remove the axis where errors were found
   
   deep_table = NULL # set the time serie dataframe
-  for (jj in 1:length(deep_table_par)) {
-      deep_table = rbind(deep_table, deep_table_par[[jj]])
+  if (length(deep_table_par) > 0) {
+      for (jj in 1:length(deep_table_par)) {
+          deep_table = rbind(deep_table, deep_table_par[[jj]])
+      }
   }
-  
+      
   ###################################
   ######################### DEEP VERTICAL MIXING CASES
   ###################################
