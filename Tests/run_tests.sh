@@ -121,8 +121,8 @@ n_success_filechecker=$(echo $report | jq '.tests[].filechecker' | grep -o "succ
 
 report=$(echo $report | jq \
 			--arg fin "$n_success_finished/$n_tests successfully finished" \
-			--arg err "$n_success_no_errors/$n_tests had no errors"\
-			--arg fck "$n_success_filechecker/$n_tests passed the filechecker" \
+			--arg err "$n_success_no_errors/$n_success_finished had no errors"\
+			--arg fck "$n_success_filechecker/$n_success_no_errors passed the filechecker" \
 			'. += {finished_description:$fin,no_errors_description:$err,filechecker_description:$fck}')
 
 
