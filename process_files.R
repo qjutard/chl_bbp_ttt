@@ -714,6 +714,9 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   chl_qc = array(" ", dim(chl_get_array))
   bbp_qc = array(" ", dim(bbp_get_array))
   
+  CHLA_QC = array(unlist(strsplit(ncvar_get(profile_B, "CHLA_QC"),"")), dim(chl_get_array))
+  BBP700_QC = array(unlist(strsplit(ncvar_get(profile_B, "BBP700_QC"),"")), dim(bbp_get_array))
+  
   ### chl flags
   chl_qc[which(!is.na(chl_array))] = "2" # start with a 2 if a value exists
   chl_qc[which( is.na(chl_array) & !is.na(chl_get_array) )] = "4" # write a "4" if the method removed a value
@@ -727,6 +730,8 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
   chl_qc[which( flag_array )] = "5" # write a "5" where the NPQ correction changed a value
   
+  chl_qc[which( CHLA_QC == "9")] = "9" # write 9 in place (missing values flagged)
+  
   if (!is.na(chl_greylist_qc)){
       chl_qc[which(chl_qc=="2")] = chl_greylist_qc
   }
@@ -734,6 +739,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   ### bbp flags
   bbp_qc[which(!is.na(bbp_array))] = "1" # start with a 1 if a value exists
   bbp_qc[which( is.na(bbp_array) & !is.na(bbp_get_array) )] = "4" # write a "4" if the method removed a value
+  bbp_qc[which( BBP700_QC == "9")] = "9" # write 9 in place (missing values flagged)
   
   if (!is.na(bbp_greylist_qc)){
       bbp_qc[which(bbp_qc=="1")] = bbp_greylist_qc
