@@ -52,8 +52,8 @@ test_filechecker() {
 	all_fck_ok=true
 	for filename in $(ls ~/Documents/cornec_chla_qc/test_env/netcdf/coriolis/6901524/profiles/DMMC/DMMC_filecheck/*)
 	do
-		line=$(sed '3q;d' $filename)
-		if [ "$line" != "STATUS: FILE-ACCEPTED" ]; then
+		line_status=$(sed '3q;d' $filename)
+		if [ "$line_status" != "STATUS: FILE-ACCEPTED" ]; then
 			all_fck_ok=false
 		fi
 	done
@@ -73,18 +73,17 @@ report=$(jq -n \
 			'{sha:$sha, tests:[]}')
 
 
-#clean
-#rm DEEP_EST.t
+rm DEEP_EST.t
 
 # loop on tests
 while read -r line; do
 	
-	# Clean outputs
-	#clean
+	# Clean outputs (except DEEP_EST.t)
+	clean
 	
 	# Run the test
 	echo $line
-	#$line
+	eval "$line &>/dev/null"
 	
 	# Verify success	
 
