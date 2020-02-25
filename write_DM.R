@@ -3,7 +3,8 @@
 ################################################################
 
 write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_coefficient, scientific_equation, 
-                     param_adjusted=NULL, param_adjusted_qc=NULL, param_adjusted_error=NULL, fill_value=FALSE) {
+                     comment_dmqc_operator_PRIMARY, comment_dmqc_operator_PARAM, param_adjusted=NULL, param_adjusted_qc=NULL, 
+                     param_adjusted_error=NULL, fill_value=FALSE) {
     
     filenc_out <- nc_open(file_out, readunlim=FALSE, write=TRUE)
     
@@ -216,11 +217,6 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     ############################
     ### Change attributes
     ############################
-    
-    comment_dmqc_operator_PRIMARY = "PRIMARY | https://orcid.org/0000-0001-9992-5334 | Raphaelle Sauzede, CNRS" 
-    #comment_dmqc_operator_BBP700 = "BBP700 | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS" 
-    #comment_dmqc_operator_CHLA = "CHLA | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS" 
-    comment_dmqc_operator_PARAM = paste(param_name, " | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS", sep="")
     
     all_att = ncatt_get(filenc_out, varid=0)
     

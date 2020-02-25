@@ -180,16 +180,22 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     ### scientific comment
     scientific_comment_chl = "CHLA delayed mode adjustment following the work done by M. Cornec in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)"
     scientific_comment_bbp = "BBP700 delayed mode adjustment following the work done by M. Cornec in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)"
+    comment_dmqc_operator_PRIMARY = "PRIMARY | https://orcid.org/0000-0001-9992-5334 | Raphaelle Sauzede, CNRS" 
+    comment_dmqc_operator_BBP700 = "BBP700 | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS" 
+    comment_dmqc_operator_CHLA = "CHLA | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS" 
+    #comment_dmqc_operator_PARAM = paste(param_name, " | https://orcid.org/0000-0002-1230-164X | Catherine Schmechtig, CNRS", sep="")
     
     if (!only_CHL) {
         write_DM(file_out=file_out, param_name="BBP700", DATE=DATE, scientific_comment=scientific_comment_bbp, scientific_coefficient=scientific_coefficient_bbp, 
-                 scientific_equation=scientific_equation_bbp, param_adjusted=BBP700_ADJUSTED, param_adjusted_qc=BBP700_ADJUSTED_QC, 
+                 scientific_equation=scientific_equation_bbp, comment_dmqc_operator_PRIMARY=comment_dmqc_operator_PRIMARY, 
+                 comment_dmqc_operator_PARAM=comment_dmqc_operator_BBP700, param_adjusted=BBP700_ADJUSTED, param_adjusted_qc=BBP700_ADJUSTED_QC, 
                  param_adjusted_error=BBP700_ADJUSTED_ERROR, fill_value=fill_value)
     }
     
     if (!only_BBP) {
         write_DM(file_out=file_out, param_name="CHLA", DATE=DATE, scientific_comment=scientific_comment_chl, scientific_coefficient=scientific_coefficient_chl, 
-                 scientific_equation=scientific_equation_chl, param_adjusted=CHLA_ADJUSTED, param_adjusted_qc=CHLA_ADJUSTED_QC, 
+                 scientific_equation=scientific_equation_chl, comment_dmqc_operator_PRIMARY=comment_dmqc_operator_PRIMARY, 
+                 comment_dmqc_operator_PARAM=comment_dmqc_operator_CHLA, param_adjusted=CHLA_ADJUSTED, param_adjusted_qc=CHLA_ADJUSTED_QC, 
                  param_adjusted_error=CHLA_ADJUSTED_ERROR, fill_value=fill_value)
     }
 
