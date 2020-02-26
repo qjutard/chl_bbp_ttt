@@ -129,22 +129,26 @@ report=$(echo $report | jq \
 # Write global status
 if [ $n_success_finished == $n_tests ]; then
 	all_success_finished="success"
-	if [ $n_success_no_errors == $n_tests ]; then
-		all_success_no_errors="success"
-		if [ $n_success_filechecker == $n_tests ]; then
-			all_success_filechecker="success"
-		else
-			all_success_filechecker="failure"
-		fi
-	else
-		all_success_no_errors="failure"
-		all_success_filechecker="pending"
-	fi
 else
-	all_success_finished="failure"
-	all_success_no_errors="pending"
-	all_success_filechecker="pending"
+    all_success_finished="failure"
 fi
+
+if [ $n_success_no_errors == $n_tests ]; then
+	all_success_no_errors="success"
+elif [ $n_success_no_errors == $n_success_finished ]; then
+    all_success_no_errors="pending"	
+else
+	all_success_no_errors="failure"	
+fi
+	
+if [ $n_success_filechecker == $n_tests ]; then
+	all_success_filechecker="success"
+elif [ $n_success_filechecker == $n_success_no_errors ]; then
+    all_success_filechecker="pending"
+else
+	all_success_filechecker="failure"
+fi
+	
 
 report=$(echo $report | jq \
 			--arg fin "$all_success_finished" \
