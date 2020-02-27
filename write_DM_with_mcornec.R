@@ -157,7 +157,6 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     if (is_npq & !is.na(chl_dark_min_pres)){
         if (npq_depth>chl_dark_min_pres){
             print(error_message(203))
-            nc_close(filenc_out)
             system2("rm", file_out)
             return(203)
         }

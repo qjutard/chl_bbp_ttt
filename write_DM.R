@@ -43,6 +43,7 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     N_PARAM = filenc_out$dim[['N_PARAM']]$len
     N_CALIB = filenc_out$dim[['N_CALIB']]$len
     N_PROF = filenc_out$dim[['N_PROF']]$len
+    N_LEVELS = filenc_out$dim[['N_LEVELS']]$len
     
     # check that dimensions are aligned correctly
     dim_par = dim(parameters)
@@ -108,11 +109,11 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
             ncvar_put(filenc_out, fill_name, fill_var)
         }
 
-        fill_test = unlist(strsplit(ncvar_get(filenc_out, PARAM_QC_NAME, start=c(1,id_prof)), "")) # get the original QC axis
+        fill_test = unlist(strsplit(ncvar_get(filenc_out, PARAM_QC_NAME, start=c(1,id_prof), count=c(N_LEVELS,1)), "")) # get the original QC axis
         fill_space = which(fill_test!=" " & fill_test!="9") # Where are non missing values, is used in PROFILE_PARAM_QC
         fill_test[fill_space] = "4"
         fill_test = paste(fill_test, collapse="")
-        ncvar_put(filenc_out, PARAM_ADJUSTED_QC_NAME, fill_test, start=c(1,id_prof))
+        ncvar_put(filenc_out, PARAM_ADJUSTED_QC_NAME, fill_test, start=c(1,id_prof), count=c(N_LEVELS,1))
 
     }
     
@@ -152,7 +153,7 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     HISTORY_SOFTWARE = "DMMC"
     ncvar_put(filenc_out, "HISTORY_SOFTWARE", HISTORY_SOFTWARE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
-    HISTORY_SOFTWARE_RELEASE = "1.02"
+    HISTORY_SOFTWARE_RELEASE = "1.03"
     ncvar_put(filenc_out, "HISTORY_SOFTWARE_RELEASE", HISTORY_SOFTWARE_RELEASE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
     HISTORY_DATE = DATE
