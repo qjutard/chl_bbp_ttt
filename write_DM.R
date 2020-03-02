@@ -6,7 +6,7 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
                      comment_dmqc_operator_PRIMARY, comment_dmqc_operator_PARAM, param_adjusted=NULL, param_adjusted_qc=NULL, 
                      param_adjusted_error=NULL, fill_value=FALSE) {
     
-    filenc_out <- nc_open(file_out, readunlim=FALSE, write=TRUE)
+    filenc_out = nc_open(file_out, readunlim=FALSE, write=TRUE)
     
     ############################
     ### Find some parameter indices
@@ -22,14 +22,12 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     if ( length(id_param)<1 ){ 
         print(error_message(205))
         nc_close(filenc_out)
-        system2("rm", file_out)
         return(205)
     } 
     
     if ( length(id_param)>1 ){ 
         print(error_message(202))
         nc_close(filenc_out)
-        system2("rm", file_out)
         return(202)
     } 
     
@@ -50,6 +48,7 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     dim_cal = dim(calib_date)
     if ( dim_par[1]!=N_PARAM | dim_par[2]!=N_PROF | dim_cal[1]!=N_PARAM | dim_cal[2]!=N_CALIB | dim_cal[3]!=N_PROF ){
         print(error_message(204))
+        nc_close(filenc_out)
         return(204)
     }
     
@@ -75,7 +74,6 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
         
         inc_ret = increment_N_CALIB(file_out=file_out, file_out_copy=paste(file_out, "_copy", sep=""))
         if (inc_ret!=0) { 
-            system2("rm", file_out)
             return(inc_ret) 
         }
         

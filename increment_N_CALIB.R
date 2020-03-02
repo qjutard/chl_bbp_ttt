@@ -10,7 +10,7 @@ increment_N_CALIB <- function(file_out, file_out_copy) {
         return(306)
     }
     
-    filenc_out <- nc_open(file_out, readunlim=FALSE, write=TRUE)
+    filenc_out = nc_open(file_out, readunlim=FALSE, write=TRUE)
     
     ### This requires creating a new file and copying everything to it with a new N_calib
     

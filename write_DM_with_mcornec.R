@@ -190,6 +190,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
                  comment_dmqc_operator_PARAM=comment_dmqc_operator_BBP700, param_adjusted=BBP700_ADJUSTED, param_adjusted_qc=BBP700_ADJUSTED_QC, 
                  param_adjusted_error=BBP700_ADJUSTED_ERROR, fill_value=fill_value)
         if (exit!=0) {
+            system2("rm", file_out)
             return(exit)
         }
     }
@@ -200,6 +201,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
                  comment_dmqc_operator_PARAM=comment_dmqc_operator_CHLA, param_adjusted=CHLA_ADJUSTED, param_adjusted_qc=CHLA_ADJUSTED_QC, 
                  param_adjusted_error=CHLA_ADJUSTED_ERROR, fill_value=fill_value)
         if (exit!=0) {
+            system2("rm", file_out)
             return(exit)
         }
     }
