@@ -23,6 +23,7 @@ date_override_call = uf[12]
 offset_override_file = uf[13]
 only_CHL = as.logical(uf[14])
 test_env = as.logical(uf[15])
+multi_core = uf[16]
 
 ### Check conflicting options
 exists_WMO = as.numeric(profile_WMO!="NA")
@@ -58,9 +59,6 @@ source(paste(path_to_source, "write_DM_with_mcornec.R", sep=""))
 index_ifremer = read.table(path_to_index_ifremer, sep=",", header = T)
 index_greylist = read.csv(path_to_index_greylist, sep = ",")
 
-# for parallelization
-num_cores = detectCores()
-
 ### build profile_list from WMO, list, or profile name
 if (profile_WMO!="NA") {
     files = as.character(index_ifremer$file) #retrieve the path of each netcfd file
@@ -79,20 +77,26 @@ if (profile_WMO!="NA") {
 
 ### Treat optional arguments
 
-if (position_override_call=="NA") {
+if (multi_core == "NA") {
+    num_cores = detectCores()
+} else {
+    num_cores = as.numeric(multi_cores)
+}
+
+if (position_override_call == "NA") {
 	position_override = NULL
 } else {
 	position_override = as.numeric(unlist(strsplit(position_override_call, ";")))
 }
 
-if (offset_override_call=="NA") {
+if (offset_override_call == "NA") {
 	offset_override = list(NULL)
 } else if (offset_override_call=="dmmc") {
     offset_override = list(offset_override_call)
 } else {
 	offset_override = list(as.numeric(unlist(strsplit(offset_override_call, ";"))))
 }
-if (offset_override_file!="NA") {
+if (offset_override_file != "NA") {
     offset_override = NULL 
     offset_table = read.table(offset_override_file)
     for (i in 1:length(profile_list_all)) {
@@ -105,7 +109,7 @@ if (offset_override_file!="NA") {
     }
 }
 
-if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
+if (DEEP_EST_table == "NA") { # calculate deep est if it is not given
     if (!just_copy & !fill_value & offset_override_call=="NA" & offset_override_file=="NA") { # DEEP_EST is not necessary if we just want to copy or fill the files, or if offset values are given
         profile_actual = profile_list_all[1]
         DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer, n_cores=num_cores)
@@ -121,7 +125,7 @@ if (DEEP_EST_table=="NA") { # calculate deep est if it is not given
     }
 }
 
-if (date_override_call=="NA") {
+if (date_override_call == "NA") {
     date_override = NULL
 } else {
     date_override = date_override_call

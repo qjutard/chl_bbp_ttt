@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() { 
-	echo "Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-B|-C] [-cdfhqT]
+	echo "Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-m <n_cores>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-B|-C] [-cdfhqT]
 Do '$0 -h' for help" 1>&2
 	exit 1 
 }
@@ -12,7 +12,7 @@ helprint() {
 DMMC does Delayed mode computing and writing following the work done by M. Cornec 
 in Bellacicco et al. 2019 (http://dx.doi.org/10.1029/2019GL084078)
 
-Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-B|-C] [-cdfhqT]
+Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>] [-m <n_cores>] [-o <offset> | -O <offset_file>] [-p <position>] [-t <date>] [-B|-C] [-cdfhqT]
 
 ### Options
 
@@ -27,6 +27,8 @@ Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>
 [-D <DEEP_EST>] : Use an already existing DEEP_EST table. This table can take some time
                   to be computed so if DMMC has already been used on this float it is
                   best practice to reuse the DEEP_EST table that has been created.
+[-m <n_cores>] : Define the number of cores to use for parallelization. By default DMMC
+                 uses all available cores.
 [-o <offset>] : Override the computed dark offset and pressure minimum for dark. <offset>
                 should be formatted as 'OFF.off;MIN.min' with the single brackets, where
                 OFF.off is the desired offset (chl_dark=chl-offset) and MIN.min is a 
@@ -67,6 +69,7 @@ Usage: $0 -W <WMO_number> | -L <profile_list> | -P <profile_name> [-D <DEEP_EST>
 WMO=NA
 List=NA
 Profile=NA
+multi_core=NA
 DEEP=NA
 offset=NA
 Offset_file=NA
@@ -80,7 +83,7 @@ fill=FALSE
 qc3=FALSE
 Test_env=FALSE
 
-while getopts W:L:P:D:o:O:p:t:BcCdfqTh option
+while getopts W:L:P:D:m:o:O:p:t:BcCdfqTh option
 do
 case "${option}"
 in
@@ -88,6 +91,7 @@ W) WMO=${OPTARG};;
 L) List=${OPTARG};;
 P) Profile=${OPTARG};;
 D) DEEP=${OPTARG};;
+m) multi_core=${OPTARG};;
 o) offset=${OPTARG};;
 O) Offset_file=${OPTARG};;
 p) position=${OPTARG};;
@@ -104,4 +108,4 @@ h) helprint;;
 esac
 done
 
-Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile $position $offset $BBP_only $time_date $Offset_file $CHL_only $Test_env
+Rscript ~/Documents/cornec_chla_qc/chl_bbp_ttt/start_DMMC.R $WMO $List $DEEP $copy $fill $descent $qc3 $Profile $position $offset $BBP_only $time_date $Offset_file $CHL_only $Test_env $multi_core
