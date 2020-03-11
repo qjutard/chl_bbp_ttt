@@ -2,6 +2,9 @@
 # Function to write DM information of a parameter onto a B file
 ################################################################
 
+require(ncdf4)
+require(stringr)
+
 write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_coefficient, scientific_equation, 
                      comment_dmqc_operator_PRIMARY, comment_dmqc_operator_PARAM, param_adjusted=NULL, param_adjusted_qc=NULL, 
                      param_adjusted_error=NULL, fill_value=FALSE) {

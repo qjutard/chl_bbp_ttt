@@ -41,61 +41,6 @@ require(ncdf4) #deal with netcdf format files
 require(oce) #calculate density sigma
 require(MASS)
 
-####################
-############### FUNCTIONS
-###################
-
-#dir_function <- "/PATH_FUNCTIONS/"
-dir_function = "~/Documents/cornec_chla_qc/chl_bbp_ttt/Functions/"
-
-source(paste(dir_function,"NPQ_cor_X12_XB18.R",sep="")) # Needed to correct the profile from the NPQ (in presence of PAR measured in situ)
-source(paste(dir_function,"NPQ_cor_P18.R",sep="")) # Needed to correct the profile from the NPQ (in absence of PAR measured in situ)
-source(paste(dir_function,"RunningFilter.R",sep="")) # Needed to smooth some profiles (running median/mean on a given window)
-source(paste(dir_function,"MLD_calc.R",sep="")) #Needed to calculate the MLD
-source(paste(dir_function,"Outliars_med.R",sep="")) #Needed to test outliars in the Dark offset time series
-source(paste(dir_function,"Dark_MLD_table_coriolis.R",sep="")) #Needed to correct the dark offset in cases of deep vertical mixing
-source(paste(dir_function,"Zone.R",sep="")) # Needed to attribute a regional criterion on the profile for the cases where a regional correction is needed
-source(paste(dir_function,"Darkoz.R",sep="")) # Needed to calculate a dark offset in the regions of Oxygen Minimum Zone
-source(paste(dir_function,"DarkXing.R",sep="")) # Needed to calculate a dark offset in the regions where the chla show an increase at depth 
-source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the dark offset of the chla (depends on the float location, and if there are cases of deep vertical mixing)
-
-####################
-############### READ THE MERGE FILE INDEX
-###################
-
-# Read the merge file index
-#index_ifremer<-read.table("~/Documents/data/argo_merge-profile_index.txt", skip=9, sep = ",")
-
-####################
-###############  INITIALIZE THE VECTOR OF PROFILES TO TREAT
-###################
-
-
-## !!!!!!!! Initiate the profiles list to be treated
-# Must be a vector of profiles ID at the format "WMO_profilenumber.", example : "6901495_025." (12 elements)
-# The "." is used to tell that the profile is an Ascent one (should be replaced by "D" if it is a Descent one) 
-
-#profile_list<-c("6901524_150.", # case of deep vertical mixing in the north atlantic subpolar gyre 
-#                "6901472_024.", # case of subtropical gyre with increase of Fchla at depth
-#                "6901527_040.", # case of NPQ correction with the PAR profile
-#                "5904686_040."# case of NPQ correction without the PAR profile
-#                )
-#profile_list<-c("6901524_150.")
-#path_to_netcdf = "~/Documents/data/chla_night_profiles/"
-#path_to_netcdf = "/DATA/ftp.ifremer.fr/ifremer/argo/dac/"
-
-
-########################################################################################################
-####################
-#################### LOOP THE TREATMENT
-#################### 
-########################################################################################################
-
-
-#dark_old<-"XXXXXXX" # initiate the dark marker (use to calculate a dark correction on a float time serie) 
-
-#for (profile_actual in profile_list) {
-
 process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
                          accept_descent=FALSE, accept_QC3=FALSE, position_override=NULL, offset_override=NULL, 
                          date_override=NULL, plot_chla=FALSE){ 
@@ -127,23 +72,6 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     print(error_message(101))
     return(101)
   } 
-  
-  #################
-  ############# B) DARK TEST FOR DEEP VERTICAL MIXING FURTHER CORRECTION
-  #################
-  
-  # Calculation of the Dark time series to identify if deep vertical mixing offset will be needed on profiles of this float time serie
-  # This is done once per float
-  #dark_new<-NA
-  #dark_new<-substr(profile_actual,1,7) # attribute the actual wmo to the dark marker
-  #if (dark_new!=dark_old) { #test if the profile is from a new WMO or not
-  #if (is.null(DEEP_EST)){ ### if DEEP_EST is not given as argument, compute it (if several profiles from the same float will be used, it should be calculated once and given as argument)
-    #print("dark TS calc")
-    #DEEP_EST<-NULL
-    #DEEP_EST<-Dark_MLD_table_coriolis(substr(profile_actual,1,7), # calculation of the dark time serie (Dark_MLD_table_coriolis function)
-    #                                  path_to_netcdf,index_ifremer)
-  #}
-  #dark_old<-dark_new #attribute the actual wmo to the dark marker for the next profile
   
   #################
   ############# C) OPEN THE FILE
@@ -788,8 +716,4 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   
 }
 
-#profile_actual = profile_list[1]
-#DEEP_EST = Dark_MLD_table_coriolis(substr(profile_actual,1,7), path_to_netcdf, index_ifremer)
-
-#L = process_file(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=DEEP_EST)
 

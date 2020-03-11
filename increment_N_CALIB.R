@@ -3,6 +3,8 @@
 # by writing a temporary file of which the name is also an input
 ##############################################################################################
 
+require(ncdf4)
+
 increment_N_CALIB <- function(file_out, file_out_copy) {
     
     if (length(file_out)!=1 | length(file_out_copy)!=1) {

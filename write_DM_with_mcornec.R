@@ -5,17 +5,7 @@
 # The script is written as a function to ideally loop over the profiles of a float or parallelize eg with mcmapply
 #########################
 
-require(ncdf4) #deal with netcdf format files
-require(oce) #calculate density sigma
-require(MASS)
-require(stringr)
-require(parallel)
 require(stringi)
-
-source(paste(path_to_source, "process_files.R", sep=""))
-source(paste(path_to_source, "write_DM.R", sep=""))
-source(paste(path_to_source, "error_message.R", sep=""))
-source(paste(path_to_source, "increment_N_CALIB.R", sep=""))
 
 write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=NULL, index_greylist=NULL, 
                         accept_descent=FALSE, just_copy=FALSE, fill_value=FALSE, position_override=NULL, 

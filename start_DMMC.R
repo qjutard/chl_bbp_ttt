@@ -52,8 +52,32 @@ if (test_env) {
 	path_to_netcdf = path_to_netcdf_test_env
 }
 
-### Source the DM function and subfunctions, and libraries
+### Source the DM functions and subfunctions, and libraries
+library(parallel)
+library(ncdf4)
+library(stringr)
+library(stringi)
+library(oce)
+library(MASS)
+
 source(paste(path_to_source, "write_DM_with_mcornec.R", sep=""))
+source(paste(path_to_source, "process_files.R", sep=""))
+source(paste(path_to_source, "write_DM.R", sep=""))
+source(paste(path_to_source, "error_message.R", sep=""))
+source(paste(path_to_source, "increment_N_CALIB.R", sep=""))
+
+dir_function = paste(path_to_source,"Functions/", sep="")
+source(paste(dir_function,"NPQ_cor_X12_XB18.R",sep="")) # Needed to correct the profile from the NPQ (in presence of PAR measured in situ)
+source(paste(dir_function,"NPQ_cor_P18.R",sep="")) # Needed to correct the profile from the NPQ (in absence of PAR measured in situ)
+source(paste(dir_function,"RunningFilter.R",sep="")) # Needed to smooth some profiles (running median/mean on a given window)
+source(paste(dir_function,"MLD_calc.R",sep="")) #Needed to calculate the MLD
+source(paste(dir_function,"Outliars_med.R",sep="")) #Needed to test outliars in the Dark offset time series
+source(paste(dir_function,"Dark_MLD_table_coriolis.R",sep="")) #Needed to correct the dark offset in cases of deep vertical mixing
+source(paste(dir_function,"Zone.R",sep="")) # Needed to attribute a regional criterion on the profile for the cases where a regional correction is needed
+source(paste(dir_function,"Darkoz.R",sep="")) # Needed to calculate a dark offset in the regions of Oxygen Minimum Zone
+source(paste(dir_function,"DarkXing.R",sep="")) # Needed to calculate a dark offset in the regions where the chla show an increase at depth 
+source(paste(dir_function,"Dark_Fchla_Corr.R",sep="")) # Needed to correct the dark offset of the chla (depends on the float location, and if there are cases of deep vertical mixing)
+
 
 ### import tables
 index_ifremer = read.table(path_to_index_ifremer, sep=",", header = T)
