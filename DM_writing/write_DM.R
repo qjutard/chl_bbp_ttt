@@ -176,19 +176,21 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
         
         axis_QC = unlist(strsplit(param_adjusted_qc[id_prof],""))
     
-        n_QC = sum( axis_QC!=" " & axis_QC!= "9")
+        n_QC = sum( axis_QC!=" " & axis_QC!= "9" )
         n_good = 100 * sum( axis_QC=="1" | axis_QC=="2" | axis_QC=="5" | axis_QC=="8" ) / n_QC
         
-        # Write BBP700 profile QC
-        if ( n_good == 0) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "F", start=id_prof, count=1)
-        if ( n_good > 0 && n_good < 25 ) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "E", start=id_prof, count=1)
-        if ( n_good >= 25 && n_good < 50 ) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "D", start=id_prof, count=1)
-        if ( n_good >= 50 && n_good < 75 ) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "C", start=id_prof, count=1)
-        if ( n_good >= 75 && n_good < 100 ) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "B", start=id_prof, count=1)
-        if ( n_good == 100 ) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "A", start=id_prof, count=1)
-        
-        if ( n_QC == 0) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, " ", start=id_prof, count=1)
-        
+        if ( n_QC == 0) {
+			ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, " ", start=id_prof, count=1)
+        } else {
+			# Write param profile QC
+        	if ( n_good == 0) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "F", start=id_prof, count=1)
+        	if ( n_good > 0 && n_good < 25 ) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "E", start=id_prof, count=1)
+        	if ( n_good >= 25 && n_good < 50 ) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "D", start=id_prof, count=1)
+        	if ( n_good >= 50 && n_good < 75 ) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "C", start=id_prof, count=1)
+        	if ( n_good >= 75 && n_good < 100 ) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "B", start=id_prof, count=1)
+        	if ( n_good == 100 ) ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "A", start=id_prof, count=1)
+         }
+
     } else {
         if (length(fill_space) != 0) { # if there exists at leat one value of PARAM
             ncvar_put(filenc_out, PROFILE_PARAM_QC_NAME, "F", start=id_prof, count=1)
