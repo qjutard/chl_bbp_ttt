@@ -115,7 +115,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     
     ### scientific_coefficient
     if (!is.na(chl_dark_offset)) {
-        scientific_coefficient_chl = paste("CHLA_OFFSET =", round(chl_dark_offset,4))
+        scientific_coefficient_chl = paste("CHLA_OFFSET =", signif(chl_dark_offset,4))
     } else {
         scientific_coefficient_chl = paste("CHLA_OFFSET =", 0)
     }
@@ -124,7 +124,7 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
     }
     
     if (!is.na(bbp_offset)) {
-        scientific_coefficient_bbp = paste("BBP700_OFFSET =", round(bbp_offset,4))
+        scientific_coefficient_bbp = paste("BBP700_OFFSET =", signif(bbp_offset,4))
     } else {
         scientific_coefficient_bbp = ""
     }
