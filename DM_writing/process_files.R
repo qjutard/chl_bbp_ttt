@@ -546,46 +546,44 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
     med_bottom = NULL
     med_bottom = median(bbp[which(dep_bbp < 300 & dep_bbp > 250)], na.rm=T)
     diff_bottom = 0-med_bottom
-    bbp = bbp+diff_bottom
   }
   
   if (substr(profile_actual,1,7)==2902092 & substr(profile_actual,1,11) < 125 & substr(profile_actual,1,11) > 97 ) {
     med_bottom = NULL
     med_bottom = median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
     diff_bottom = 0.000035-med_bottom
-    bbp = bbp+diff_bottom
   }
   
   if (substr(profile_actual,1,7)==6901174 & format(time,"%Y-%m-%d", tz="UTC") >= as.POSIXct("06/03/2018",format="%d/%m/%Y", tz="UTC")) {
     med_bottom = NULL
     med_bottom = median(bbp[which(dep_bbp < 950 & dep_bbp > 850)], na.rm=T)
     diff_bottom = 0.0011-med_bottom
-    bbp = bbp+diff_bottom
   }
   
   if (substr(profile_actual,1,7)==2902118 ) {
     med_bottom = NULL
     med_bottom = median(bbp[which(dep_bbp < 950 & dep_bbp > 850)], na.rm=T)
     diff_bottom = 0.00035-med_bottom
-    bbp = bbp+diff_bottom
   }
   
   if (substr(profile_actual,1,7)==6901485 & format(time,"%Y-%m-%d", tz="UTC") >= as.POSIXct("08/05/2015",format="%d/%m/%Y", tz="UTC") &
       format(time,"%Y-%m-%d", tz="UTC")  <= as.POSIXct("28/07/2015",format="%d/%m/%Y", tz="UTC")) {
     med_bottom = NULL
-    med_bottom = median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
+    med_bottom = median(bbp[which(dep_bbp < 950 & dep_bbp > 850)], na.rm=T)
     diff_bottom = 0.0012-med_bottom
-    bbp = bbp+diff_bottom
   }
   
   if (substr(profile_actual,1,7)==6901485 & format(time,"%Y-%m-%d", tz="UTC") >= as.POSIXct("01/09/2015",format="%d/%m/%Y", tz="UTC") &
       format(time,"%Y-%m-%d", tz="UTC")  <= as.POSIXct("04/03/2016",format="%d/%m/%Y", tz="UTC")) {
     med_bottom = NULL
-    med_bottom = median(bbp[which(dep_bbp < 1600 & dep_bbp > 1400)], na.rm=T)
+    med_bottom = median(bbp[which(dep_bbp < 950 & dep_bbp > 850)], na.rm=T)
     diff_bottom = 0.0012-med_bottom
-    bbp = bbp+diff_bottom
   }
   
+  if (!is.na(diff_bottom)) {
+    bbp = bbp + diff_bottom
+  }
+
   ############################
   ############ I) PLOT THE PROFILES BEFORE/AFTER CORRECTION
   ############################
