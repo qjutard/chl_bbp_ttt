@@ -519,7 +519,7 @@ process_file <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST
   bbp_all = bbp_get
   
   ################### 1) RANGE TEST ###############################
-  bbp_all[which((bbp_all > 0.1) | (bbp_all <  (-0.000005)))] = NA
+  bbp_all[which((bbp_all > 0.1) | (bbp_all <  (-0.000025)))] = NA
   
   bbp_not_isna = NA
   bbp_not_isna = which(!is.na(pres)==T & !is.na(bbp_all)==T) # keep the information on NA values to later add them
