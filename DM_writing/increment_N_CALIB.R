@@ -8,7 +8,6 @@ require(ncdf4)
 increment_N_CALIB <- function(file_out, file_out_copy) {
     
     if (length(file_out)!=1 | length(file_out_copy)!=1) {
-        print(error_message(306))
         return(306)
     }
     
