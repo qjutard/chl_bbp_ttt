@@ -178,8 +178,9 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         exit = write_DM(file_out=file_out, param_name="BBP700", DATE=DATE, scientific_comment=scientific_comment_bbp, scientific_coefficient=scientific_coefficient_bbp, 
                  scientific_equation=scientific_equation_bbp, comment_dmqc_operator_PRIMARY=comment_dmqc_operator_PRIMARY, 
                  comment_dmqc_operator_PARAM=comment_dmqc_operator_BBP700, param_adjusted=BBP700_ADJUSTED, param_adjusted_qc=BBP700_ADJUSTED_QC, 
-                 param_adjusted_error=BBP700_ADJUSTED_ERROR, fill_value=fill_value)
+                 param_adjusted_error=BBP700_ADJUSTED_ERROR, fill_value=fill_value, HISTORY_SOFTWARE="DMMC", HISTORY_SOFTWARE_RELEASE="1.05")
         if (exit!=0) {
+            print(error_message(exit))
             system2("rm", file_out)
             return(exit)
         }
@@ -189,8 +190,9 @@ write_DM_MC <- function(profile_actual, index_ifremer, path_to_netcdf, DEEP_EST=
         exit = write_DM(file_out=file_out, param_name="CHLA", DATE=DATE, scientific_comment=scientific_comment_chl, scientific_coefficient=scientific_coefficient_chl, 
                  scientific_equation=scientific_equation_chl, comment_dmqc_operator_PRIMARY=comment_dmqc_operator_PRIMARY, 
                  comment_dmqc_operator_PARAM=comment_dmqc_operator_CHLA, param_adjusted=CHLA_ADJUSTED, param_adjusted_qc=CHLA_ADJUSTED_QC, 
-                 param_adjusted_error=CHLA_ADJUSTED_ERROR, fill_value=fill_value)
+                 param_adjusted_error=CHLA_ADJUSTED_ERROR, fill_value=fill_value, HISTORY_SOFTWARE="DMMC", HISTORY_SOFTWARE_RELEASE="1.05")
         if (exit!=0) {
+            print(error_message(exit))
             system2("rm", file_out)
             return(exit)
         }

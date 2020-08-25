@@ -6,8 +6,8 @@ require(ncdf4)
 require(stringr)
 
 write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_coefficient, scientific_equation, 
-                     comment_dmqc_operator_PRIMARY, comment_dmqc_operator_PARAM, param_adjusted=NULL, param_adjusted_qc=NULL, 
-                     param_adjusted_error=NULL, fill_value=FALSE) {
+                     comment_dmqc_operator_PRIMARY, comment_dmqc_operator_PARAM, HISTORY_SOFTWARE, HISTORY_SOFTWARE_RELEASE, 
+                     param_adjusted=NULL, param_adjusted_qc=NULL, param_adjusted_error=NULL, fill_value=FALSE, do_N_CALIB_increment=FALSE) {
     
     filenc_out = nc_open(file_out, readunlim=FALSE, write=TRUE)
     
@@ -22,16 +22,14 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     id_param_arr = which(parameters==str_pad(param_name, 64, side="right"), arr.ind=TRUE)
     n_prof = dim(parameters)[2]
     
-    if ( length(id_param)<1 ){ 
-        print(error_message(205))
+    if ( length(id_param)<1 ) { 
         nc_close(filenc_out)
-        return(205)
+        return(205) # error message in DMMC
     } 
     
-    if ( length(id_param)>1 ){ 
-        print(error_message(202))
+    if ( length(id_param)>1 ) { 
         nc_close(filenc_out)
-        return(202)
+        return(202) # error message in DMMC
     } 
     
     N_HISTORY = filenc_out$dim[['N_HISTORY']]$len
@@ -49,10 +47,9 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     # check that dimensions are aligned correctly
     dim_par = dim(parameters)
     dim_cal = dim(calib_date)
-    if ( dim_par[1]!=N_PARAM | dim_par[2]!=N_PROF | dim_cal[1]!=N_PARAM | dim_cal[2]!=N_CALIB | dim_cal[3]!=N_PROF ){
-        print(error_message(204))
+    if ( dim_par[1]!=N_PARAM | dim_par[2]!=N_PROF | dim_cal[1]!=N_PARAM | dim_cal[2]!=N_CALIB | dim_cal[3]!=N_PROF ) {
         nc_close(filenc_out)
-        return(204)
+        return(204) # error message in DMMC
     }
     
     # get vectors of dates corresponding to the parameter
@@ -71,13 +68,13 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     ### Increment N_CALIB if necessary
     ############################
     
-    if (new_cal > N_CALIB) {
+    if (new_cal > N_CALIB & do_N_CALIB_increment) {
         
         nc_close(filenc_out)
         
         inc_ret = increment_N_CALIB(file_out=file_out, file_out_copy=paste(file_out, "_copy", sep=""))
         if (inc_ret!=0) { 
-            return(inc_ret) 
+            return(inc_ret) # error message in DMMC
         }
         
         filenc_out = nc_open(file_out, readunlim=FALSE, write=TRUE)
@@ -151,10 +148,8 @@ write_DM <- function(file_out, param_name, DATE, scientific_comment, scientific_
     HISTORY_STEP = "ARSQ"
     ncvar_put(filenc_out, "HISTORY_STEP", HISTORY_STEP, start=c(1,id_prof,i_history), count=c(4,1,1))
     
-    HISTORY_SOFTWARE = "DMMC"
     ncvar_put(filenc_out, "HISTORY_SOFTWARE", HISTORY_SOFTWARE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
-    HISTORY_SOFTWARE_RELEASE = "1.05"
     ncvar_put(filenc_out, "HISTORY_SOFTWARE_RELEASE", HISTORY_SOFTWARE_RELEASE, start=c(1,id_prof,i_history), count=c(4,1,1))
     
     HISTORY_DATE = DATE
